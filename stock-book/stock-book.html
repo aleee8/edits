@@ -498,6 +498,9 @@ const STR = {
     cancel_sale: 'إلغاء البيع وإرجاع البضاعة',
     cancel_confirm: 'إلغاء البيع رقم {no}؟ ستعود الكميات إلى المخزن.',
     sale_cancelled: 'تم إلغاء البيع رقم {no} وإرجاع البضاعة',
+    return_one: 'إرجاع قطعة', returned_n: 'مرتجع: {n}',
+    return_confirm: 'إرجاع قطعة واحدة من "{name}" إلى المخزن؟ سيُخصم {v} من البيع رقم {no}.',
+    return_done: 'تم إرجاع قطعة من "{name}" إلى المخزن',
 
     labels_title: 'طباعة الملصقات',
     labels_intro: 'المنتجات التي عليها باركود من المصنع لا تحتاج ملصقاً. اطبع ملصقات للمنتجات التي أنشأ البرنامج رقمها.',
@@ -515,6 +518,7 @@ const STR = {
     labels_preview: 'معاينة الورقة الأولى',
     labels_more: 'وأوراق أخرى بعدها: {n}',
     labels_empty: 'لا توجد منتجات هنا.',
+    labels_empty_gen: 'لا توجد منتجات أنشأ البرنامج رقمها. أزل علامة "فقط المنتجات التي أنشأ البرنامج رقمها" لعرض كل المنتجات.',
     labels_options: 'الطباعة',
 
     settings_title: 'الإعدادات',
@@ -640,6 +644,9 @@ const STR = {
     cancel_sale: 'Cancel sale and return items',
     cancel_confirm: 'Cancel sale #{no}? The items go back into stock.',
     sale_cancelled: 'Sale #{no} cancelled and items returned to stock',
+    return_one: 'Return one', returned_n: 'Returned: {n}',
+    return_confirm: 'Return one "{name}" to stock? {v} comes off sale #{no}.',
+    return_done: 'Returned one "{name}" to stock',
 
     labels_title: 'Print labels',
     labels_intro: "Products with a factory barcode don't need a label. Print labels for products whose code was made by this app.",
@@ -657,6 +664,7 @@ const STR = {
     labels_preview: 'Preview of the first sheet',
     labels_more: 'More sheets after this one: {n}',
     labels_empty: 'No products here.',
+    labels_empty_gen: 'No products have codes made by this app. Untick "Only products with codes made by this app" to see every product.',
     labels_options: 'Printing',
 
     settings_title: 'Settings',
@@ -811,24 +819,52 @@ let lastSavedRev = 0;
 let saveChain = Promise.resolve();
 
 const num0 = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const str = v => (v === null || v === undefined ? '' : String(v));
+const int0 = v => Math.round(num0(v));
+function isoOrNull(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+const arr = v => (Array.isArray(v) ? v : []);
+function normItems(items) {
+  return arr(items).filter(i => i && typeof i === 'object').map(i => ({
+    pid: str(i.pid), name: str(i.name), barcode: str(i.barcode),
+    qty: Math.max(0, int0(i.qty)), price: round2(num0(i.price)), cost: round2(num0(i.cost)),
+    returned: Math.max(0, int0(i.returned))
+  }));
+}
+// Rebuilds everything with known types, so a damaged or hand-edited backup cannot break the pages
 function normalizeState(s) {
   s = s && typeof s === 'object' ? s : {};
+  const st = { ...DEFAULT_SETTINGS, ...(s.settings && typeof s.settings === 'object' ? s.settings : {}) };
   const out = {
     app: APP_ID, version: 1, rev: Number(s.rev) || 0,
-    settings: { ...DEFAULT_SETTINGS, ...(s.settings && typeof s.settings === 'object' ? s.settings : {}) },
+    settings: {
+      storeName: str(st.storeName), currency: str(st.currency),
+      lowDefault: Math.max(0, int0(st.lowDefault)), sound: st.sound !== false, lang: st.lang === 'en' ? 'en' : 'ar',
+      nextCode: Math.max(1, int0(st.nextCode)), nextSaleNo: Math.max(1, int0(st.nextSaleNo)),
+      lastBackupAt: isoOrNull(st.lastBackupAt)
+    },
     products: [],
-    sales: Array.isArray(s.sales) ? s.sales.filter(x => x && Array.isArray(x.items)) : [],
-    stockIns: Array.isArray(s.stockIns) ? s.stockIns.filter(x => x && Array.isArray(x.items)) : []
+    sales: arr(s.sales).filter(x => x && isoOrNull(x.date)).map(x => ({
+      id: str(x.id) || uid(), no: Math.max(0, int0(x.no)), date: isoOrNull(x.date), items: normItems(x.items),
+      total: round2(num0(x.total)), profit: round2(num0(x.profit)), note: str(x.note),
+      cancelled: !!x.cancelled, cancelledAt: isoOrNull(x.cancelledAt), sample: !!x.sample
+    })),
+    stockIns: arr(s.stockIns).filter(x => x && isoOrNull(x.date)).map(x => ({
+      id: str(x.id) || uid(), date: isoOrNull(x.date), items: normItems(x.items), note: str(x.note), sample: !!x.sample
+    }))
   };
-  for (const p of (Array.isArray(s.products) ? s.products : [])) {
+  for (const p of arr(s.products)) {
     if (!p || !p.id) continue;
     out.products.push({
-      id: String(p.id), name: String(p.name || ''), barcode: String(p.barcode || ''),
-      category: String(p.category || ''), location: String(p.location || ''),
+      id: str(p.id), name: str(p.name), barcode: str(p.barcode),
+      category: str(p.category), location: str(p.location),
       cost: round2(num0(p.cost)), price: round2(num0(p.price)),
-      qty: Math.round(num0(p.qty)), minQty: Math.max(0, Math.round(num0(p.minQty))),
-      notes: String(p.notes || ''), gen: !!p.gen, sample: !!p.sample,
-      createdAt: p.createdAt || null, updatedAt: p.updatedAt || null
+      qty: int0(p.qty), minQty: Math.max(0, int0(p.minQty)),
+      notes: str(p.notes), gen: !!p.gen, sample: !!p.sample,
+      createdAt: isoOrNull(p.createdAt), updatedAt: isoOrNull(p.updatedAt)
     });
   }
   return out;
@@ -1021,7 +1057,7 @@ const ui = {
   cart: [], sellNote: '', sellMsg: null, flashPid: null,
   recv: [], recvNote: '', recvMsg: null,
   prod: { q: '', cat: '', stock: '', sort: 'name', msg: null },
-  salesPeriod: 'today',
+  salesPeriod: 'today', openSale: null,
   labels: { sel: new Map(), onlyGen: true, showPrice: true, skip: 0, q: '' }
 };
 
@@ -1054,6 +1090,7 @@ function renderBanners() {
   const out = [];
   if (storageMode === 'memory') out.push(banner('bad', t('storage_warn')));
   if (state.products.some(p => p.sample)) out.push(banner('info', t('sample_banner'), `<button type="button" class="btn btn-sm" data-action="remove-sample">${esc(t('sample_remove'))}</button>`));
+  out.push(backupReminder());
   $('#banners').innerHTML = out.join('');
 }
 function mountView() {
@@ -1178,7 +1215,7 @@ function renderHomeBody() {
   const low = P.filter(p => stockState(p) !== 'ok').sort((a, b) => a.qty - b.qty || a.name.localeCompare(b.name, lang));
   const outN = P.filter(p => p.qty <= 0).length;
   const recent = today.slice(-6).reverse();
-  el.innerHTML = `${backupReminder()}
+  el.innerHTML = `
     <section class="stats" aria-label="${esc(t('home_title'))}">
       ${tile(t('stat_today'), moneyH(sum(today, s => s.total)), esc(t('stat_todaySub', { n: today.length })), { action: 'goto-sales' })}
       ${tile(t('stat_profit'), moneyH(sum(today, s => s.profit)), esc(t('stat_profitSub', { n: sum(today, s => sum(s.items, i => i.qty)) })))}
@@ -1329,6 +1366,25 @@ function completeSale() {
   commit();
   toast(t('sale_done', { no: sale.no, total: money(sale.total) }));
   focusScan();
+}
+async function returnItem(id, k) {
+  const s = state.sales.find(x => x.id === id);
+  const line = s && s.items[k];
+  if (!line || s.cancelled || line.qty < 1) return;
+  if (!await confirmBox(t('return_confirm', { name: line.name, v: money(line.price), no: s.no }), { okText: t('return_one') })) return;
+  const cur = state.sales.find(x => x.id === id);
+  const l = cur && cur.items[k];
+  if (!l || cur.cancelled || l.qty < 1) return;
+  l.qty -= 1;
+  l.returned = (l.returned || 0) + 1;
+  const p = getP(l.pid);
+  if (p) { p.qty += 1; p.updatedAt = nowISO(); }
+  cur.total = round2(sum(cur.items, i => i.qty * i.price));
+  cur.profit = round2(sum(cur.items, i => i.qty * (i.price - i.cost)));
+  if (cur.items.every(i => i.qty === 0)) { cur.cancelled = true; cur.cancelledAt = nowISO(); }
+  ui.openSale = cur.id;
+  commit();
+  toast(t('return_done', { name: l.name }));
 }
 async function cancelSale(id) {
   const s = state.sales.find(x => x.id === id);
@@ -1591,7 +1647,7 @@ views.sales = {
 };
 function saleRow(s) {
   const when = ui.salesPeriod === 'today' ? fmtTime(s.date) : fmtDateTime(s.date);
-  return `<details class="sale${s.cancelled ? ' is-cancelled' : ''}">
+  return `<details class="sale${s.cancelled ? ' is-cancelled' : ''}"${s.id === ui.openSale ? ' open' : ''}>
     <summary>
       <span class="sale-no">${esc(t('sale_no', { no: s.no }))}</span>
       <span class="min0"><span class="sale-when"><span>${esc(when)}</span><span>${esc(t('pieces', { n: sum(s.items, i => i.qty) }))}</span>${s.cancelled ? `<span class="pill pill-muted">${esc(t('cancelled'))}</span>` : ''}</span>
@@ -1599,8 +1655,8 @@ function saleRow(s) {
       <span class="sale-total">${moneyH(s.total)}<span class="sale-profit">${esc(t('s_profit'))}: ${moneyH(s.profit)}</span></span>
     </summary>
     <div class="sale-body">
-      <div class="table-wrap"><table class="tbl"><thead><tr><th>${esc(t('col_product'))}</th><th class="num-col">${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_unit'))}</th><th class="num-col">${esc(t('col_line'))}</th></tr></thead>
-      <tbody>${s.items.map(i => `<tr><td>${esc(i.name)}</td><td class="num-col">${i.qty}</td><td class="num-col">${moneyH(i.price)}</td><td class="num-col">${moneyH(i.qty * i.price)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="table-wrap"><table class="tbl"><thead><tr><th>${esc(t('col_product'))}</th><th class="num-col">${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_unit'))}</th><th class="num-col">${esc(t('col_line'))}</th>${s.cancelled ? '' : '<th></th>'}</tr></thead>
+      <tbody>${s.items.map((i, k) => `<tr><td>${esc(i.name)}${i.returned ? ` <span class="pill pill-muted">${esc(t('returned_n', { n: i.returned }))}</span>` : ''}</td><td class="num-col">${i.qty}</td><td class="num-col">${moneyH(i.price)}</td><td class="num-col">${moneyH(i.qty * i.price)}</td>${s.cancelled ? '' : `<td class="num-col">${i.qty > 0 ? `<button type="button" class="btn btn-sm" data-action="return-item" data-id="${esc(s.id)}" data-k="${k}">${esc(t('return_one'))}</button>` : ''}</td>`}</tr>`).join('')}</tbody></table></div>
       ${s.note ? `<p class="sale-note">${esc(s.note)}</p>` : ''}
       ${s.cancelled ? '' : `<div><button type="button" class="btn btn-danger btn-sm" data-action="cancel-sale" data-id="${esc(s.id)}">${esc(t('cancel_sale'))}</button></div>`}
     </div>
@@ -1656,7 +1712,7 @@ function renderLabelList() {
     return `<div class="lbl-row"><label><input type="checkbox" data-lbl-check="${esc(p.id)}"${n ? ' checked' : ''}>
       <span class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code><span>${esc(t('in_stock_n', { n: p.qty }))}</span></span></span></label>
       <input class="in in-num" type="text" inputmode="numeric" data-on="lbl-copies" data-id="${esc(p.id)}" value="${n || ''}" placeholder="0" aria-label="${esc(t('labels_copies'))}"></div>`;
-  }).join('') : `<p class="empty" style="padding:12px">${esc(t('labels_empty'))}</p>`;
+  }).join('') : `<p class="empty" style="padding:12px">${esc(t(ui.labels.onlyGen && state.products.length ? 'labels_empty_gen' : 'labels_empty'))}</p>`;
 }
 function labelHTML(p, showPrice) {
   let bc;
@@ -1771,7 +1827,7 @@ async function restoreFrom(file) {
   let obj = null;
   try { obj = JSON.parse(await file.text()); } catch (e) { obj = null; }
   if (!obj || obj.app !== APP_ID || !obj.data || !Array.isArray(obj.data.products)) { toast(t('restore_bad'), 'bad'); return; }
-  const ok = await confirmBox(t('restore_confirm', { a: state.products.length, date: obj.exportedAt ? fmtDateTime(obj.exportedAt) : '?', b: obj.data.products.length }), { okText: t('restore_ok'), danger: true });
+  const ok = await confirmBox(t('restore_confirm', { a: state.products.length, date: isoOrNull(obj.exportedAt) ? fmtDateTime(obj.exportedAt) : '?', b: obj.data.products.length }), { okText: t('restore_ok'), danger: true });
   if (!ok) return;
   const incoming = normalizeState(obj.data);
   incoming.rev = state.rev;
@@ -1903,15 +1959,20 @@ function openProductDialog(p, opts = {}) {
   form.addEventListener('submit', e => e.preventDefault());
   form.addEventListener('keydown', e => {
     if (e.key !== 'Enter' || e.isComposing) return;
-    if (e.target.tagName === 'TEXTAREA' && !e.ctrlKey) return;
-    if (e.target.tagName === 'BUTTON') return;
-    e.preventDefault();
-    if (e.ctrlKey) { save(false); return; }
-    if (e.target.id === 'pf-barcode' && !checkBarcode()) return;
-    if (e.target.id === 'pf-barcode') err.textContent = '';
+    const tg = e.target;
+    if (tg.tagName === 'BUTTON') return;
+    if (e.ctrlKey) { e.preventDefault(); save(false); return; }
+    if (tg.tagName === 'TEXTAREA') return;
+    if (tg.id === 'pf-barcode') {
+      if (!checkBarcode()) { e.preventDefault(); return; }
+      err.textContent = '';
+    }
     const fields = $$('input.in, textarea.in', d);
-    const i = fields.indexOf(e.target);
-    if (i >= 0 && i < fields.length - 1) fields[i + 1].focus();
+    const next = fields[fields.indexOf(tg) + 1];
+    if (!next) return;
+    // Category and location have a suggestion list: let Chrome finish picking a suggestion before moving on
+    if (tg.hasAttribute('list')) setTimeout(() => next.focus(), 0);
+    else { e.preventDefault(); next.focus(); }
   });
   if (!d.open) d.showModal();
   const first = isNew && !v.barcode ? $('#pf-barcode', d) : $('#pf-name', d);
@@ -2008,12 +2069,13 @@ const actions = {
   'clear-cart': () => { ui.cart = []; ui.sellMsg = null; renderSellMsg(); renderCart(); renderSellTotals(); focusScan(); },
   'complete-sale': completeSale,
   'cancel-sale': b => cancelSale(b.dataset.id),
+  'return-item': b => returnItem(b.dataset.id, +b.dataset.k),
   'recv-add': b => { const p = getP(b.dataset.id); if (p) { addToRecv(p); const s = $('#recv-scan'); if (s) { s.value = ''; s.focus(); } } },
   'recv-inc': b => { const l = ui.recv[+b.dataset.i]; if (l) { l.qty++; renderRecvList(); renderRecvTotals(); } },
   'recv-dec': b => { const l = ui.recv[+b.dataset.i]; if (l) { l.qty = Math.max(1, l.qty - 1); renderRecvList(); renderRecvTotals(); } },
   'recv-remove': b => { ui.recv.splice(+b.dataset.i, 1); renderRecvList(); renderRecvTotals(); focusScan(); },
   'recv-submit': submitRecv,
-  'period': b => { ui.salesPeriod = b.dataset.p; mountView(); },
+  'period': b => { ui.salesPeriod = b.dataset.p; ui.openSale = null; mountView(); },
   'lbl-all': () => { labelCandidates().forEach(p => { if (!ui.labels.sel.has(p.id)) ui.labels.sel.set(p.id, defaultCopies(p)); }); views.labels.refresh(); },
   'lbl-none': () => { ui.labels.sel.clear(); views.labels.refresh(); },
   'lbl-print': printLabels
@@ -2095,8 +2157,10 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', async e => {
   const el = e.target;
-  if (el.dataset && (el.dataset.on === 'cart-price' || el.dataset.on === 'cart-qty')) { renderCart(); renderSellTotals(); return; }
-  if (el.dataset && (el.dataset.on === 'recv-qty' || el.dataset.on === 'recv-cost')) { renderRecvList(); renderRecvTotals(); return; }
+  // On leaving a cart field, show the value actually used (or put back the last valid one)
+  const on = el.dataset ? el.dataset.on : null;
+  if (on === 'cart-price' || on === 'cart-qty') { const l = ui.cart[+el.dataset.i]; if (l) el.value = on === 'cart-price' ? String(l.price) : String(l.qty); return; }
+  if (on === 'recv-qty' || on === 'recv-cost') { const l = ui.recv[+el.dataset.i]; if (l) el.value = on === 'recv-qty' ? String(l.qty) : String(l.cost); return; }
   if (el.dataset && el.dataset.lblCheck) {
     const p = getP(el.dataset.lblCheck); if (!p) return;
     if (el.checked) ui.labels.sel.set(p.id, defaultCopies(p)); else ui.labels.sel.delete(p.id);
@@ -2114,7 +2178,11 @@ document.addEventListener('change', async e => {
     case 'set-cur': state.settings.currency = el.value.trim(); commit(); break;
     case 'set-min': { const n = parseNum(el.value); state.settings.lowDefault = Number.isFinite(n) && n >= 0 ? Math.round(n) : 2; el.value = state.settings.lowDefault; commit(); break; }
     case 'set-sound': state.settings.sound = el.checked; commit(); if (el.checked) beep(true); break;
-    case 'restore-file': if (el.files && el.files[0]) await restoreFrom(el.files[0]); el.value = ''; break;
+    case 'restore-file':
+      try { if (el.files && el.files[0]) await restoreFrom(el.files[0]); }
+      catch (err) { console.error(err); toast(t('restore_bad'), 'bad'); }
+      el.value = '';
+      break;
   }
 });
 window.addEventListener('hashchange', () => {
