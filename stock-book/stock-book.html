@@ -1,0 +1,2152 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دفتر المخزن</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a6b66'/%3E%3Cg fill='%23fff'%3E%3Crect x='7' y='8' width='2' height='16'/%3E%3Crect x='11' y='8' width='1' height='16'/%3E%3Crect x='14' y='8' width='3' height='16'/%3E%3Crect x='19' y='8' width='1' height='16'/%3E%3Crect x='22' y='8' width='3' height='16'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<style>
+/* Layout: counter-side app shell. A dark shelf-strip bar with page tabs, then one working column;
+   every work page leads with the scan box, and a product's shelf location is the loudest fact on screen. */
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --surface-2: #f5f8f7;
+  --ink: #12211f;
+  --muted: #566764;
+  --line: #d6e0de;
+  --accent: #0a6b66;
+  --accent-strong: #08514d;
+  --accent-ink: #ffffff;
+  --accent-soft: #dbeeeb;
+  --ok: #1d7340;
+  --ok-soft: #dcf1e3;
+  --warn: #8a5000;
+  --warn-soft: #fbedd5;
+  --bad: #b3261e;
+  --bad-soft: #fbe2df;
+  --on-bad: #ffffff;
+  --bar: #0f2a28;
+  --bar-ink: #eaf4f2;
+  --bar-muted: #a9c2be;
+  --bar-hover: rgba(255, 255, 255, .07);
+  --bar-active: rgba(255, 255, 255, .12);
+  --bar-accent: #4fd1c3;
+  --scrim: rgba(8, 20, 19, .55);
+  --shadow: 0 1px 2px rgba(10, 40, 38, .06), 0 6px 18px rgba(10, 40, 38, .07);
+  --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1413;
+    --surface: #13201e;
+    --surface-2: #182826;
+    --ink: #e2ecea;
+    --muted: #93a7a3;
+    --line: #253532;
+    --accent: #3dbdb1;
+    --accent-strong: #74d8cd;
+    --accent-ink: #052220;
+    --accent-soft: #123430;
+    --ok: #63c98b;
+    --ok-soft: #13301f;
+    --warn: #f0b04a;
+    --warn-soft: #36280f;
+    --bad: #f08a80;
+    --bad-soft: #3a1a17;
+    --on-bad: #2a0d0a;
+    --bar: #08100f;
+    --bar-ink: #e2ecea;
+    --bar-muted: #8fa6a2;
+    --scrim: rgba(0, 0, 0, .65);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1413;
+  --surface: #13201e;
+  --surface-2: #182826;
+  --ink: #e2ecea;
+  --muted: #93a7a3;
+  --line: #253532;
+  --accent: #3dbdb1;
+  --accent-strong: #74d8cd;
+  --accent-ink: #052220;
+  --accent-soft: #123430;
+  --ok: #63c98b;
+  --ok-soft: #13301f;
+  --warn: #f0b04a;
+  --warn-soft: #36280f;
+  --bad: #f08a80;
+  --bad-soft: #3a1a17;
+  --on-bad: #2a0d0a;
+  --bar: #08100f;
+  --bar-ink: #e2ecea;
+  --bar-muted: #8fa6a2;
+  --scrim: rgba(0, 0, 0, .65);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.65 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+img, svg { max-width: 100%; }
+[hidden] { display: none !important; }
+.min0 { min-width: 0; }
+.num { direction: ltr; unicode-bidi: isolate; }
+code, .code { font-family: var(--font-mono); font-size: .9em; direction: ltr; unicode-bidi: isolate; letter-spacing: .02em; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- top bar ---------- */
+.topbar { background: var(--bar); color: var(--bar-ink); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; }
+.topbar-in { max-width: 1240px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 14px 18px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; min-width: 0; }
+.brand svg { flex: none; width: 34px; height: 34px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.brand-text strong { font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+.brand-text small { font-size: 12px; color: var(--bar-muted); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; flex: 1 1 auto; min-width: 0; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 8px 12px; border-radius: 8px; color: var(--bar-muted); text-decoration: none; white-space: nowrap; font-weight: 500; }
+.tab:hover { color: var(--bar-ink); background: var(--bar-hover); }
+.tab[aria-current="page"] { color: var(--bar-ink); background: var(--bar-active); box-shadow: inset 0 -2px 0 var(--bar-accent); }
+.lang-btn { background: transparent; border: 1px solid var(--bar-active); color: var(--bar-ink); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 600; }
+.lang-btn:hover { background: var(--bar-hover); }
+@media (max-width: 900px) {
+  .tabs { order: 3; flex-basis: 100%; }
+  .lang-btn { margin-inline-start: auto; }
+}
+
+/* ---------- page frame ---------- */
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 22px 56px; padding-inline: 16px; }
+@media (min-width: 700px) { .wrap { padding-inline: 24px; } }
+.stack { display: flex; flex-direction: column; gap: 20px; }
+.h1 { font-size: 26px; font-weight: 700; margin: 0; line-height: 1.3; text-wrap: balance; }
+.h2 { font-size: 17px; font-weight: 600; margin: 0; line-height: 1.4; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; max-width: 68ch; }
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.head-actions, .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .two-col { grid-template-columns: minmax(0, 1fr); } }
+#banners:not(:empty) { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.banner { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); }
+.banner p { margin: 0; flex: 1 1 260px; }
+.banner-warn { background: var(--warn-soft); }
+.banner-bad { background: var(--bad-soft); }
+.banner-ic { font-weight: 700; width: 22px; height: 22px; flex: none; border-radius: 50%; display: inline-grid; place-items: center; font-size: 13px; background: var(--accent); color: var(--accent-ink); }
+.banner-warn .banner-ic { background: var(--warn); color: var(--surface); }
+.banner-bad .banner-ic { background: var(--bad); color: var(--on-bad); }
+
+/* ---------- controls ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; line-height: 1.4; }
+.btn:hover { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: not-allowed; border-color: var(--line); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-primary:disabled { background: var(--accent); border-color: var(--accent); }
+.btn-danger { color: var(--bad); }
+.btn-danger:hover { border-color: var(--bad); }
+.btn-danger-solid { background: var(--bad); border-color: var(--bad); color: var(--on-bad); }
+.btn-danger-solid:hover { border-color: var(--bad); filter: brightness(.95); }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn-ghost:hover { color: var(--ink); border-color: var(--line); }
+.btn-lg { padding: 14px 20px; font-size: 17px; }
+.btn-sm { padding: 5px 11px; font-size: 13px; }
+.btn-block { width: 100%; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.icon-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; display: inline-grid; place-items: center; }
+.icon-btn:hover { color: var(--bad); border-color: var(--line); }
+.in { width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); line-height: 1.4; }
+.in:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.in.invalid { border-color: var(--bad); box-shadow: 0 0 0 3px var(--bad-soft); }
+.in-num { text-align: center; font-variant-numeric: tabular-nums; direction: ltr; }
+textarea.in { resize: vertical; min-height: 64px; }
+select.in { cursor: pointer; }
+input[type="checkbox"] { accent-color: var(--accent); width: 17px; height: 17px; margin: 0; flex: none; }
+.check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 520px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.inline { display: flex; gap: 8px; }
+.inline .in { flex: 1; min-width: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; align-self: flex-start; }
+.seg button { border: 0; background: var(--surface); padding: 7px 14px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+/* ---------- scan box ---------- */
+.scanbox { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding-inline: 14px; transition: border-color .15s, box-shadow .15s; }
+.scanbox:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.scanbox svg { width: 30px; height: 24px; color: var(--accent); flex: none; }
+.scan-input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; padding: 15px 0; font-size: 19px; }
+.scan-input:focus-visible { outline: none; }
+.scanbox-sm { border-width: 1px; border-radius: 9px; }
+.scanbox-sm svg { width: 24px; height: 18px; }
+.scanbox-sm .scan-input { padding: 9px 0; font-size: 15px; }
+
+/* ---------- pills, location chips ---------- */
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px 1px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; line-height: 1.6; }
+.pill-ic { font-weight: 700; }
+.pill-low { background: var(--warn-soft); color: var(--warn); }
+.pill-out, .pill-neg { background: var(--bad-soft); color: var(--bad); }
+.pill-ok { background: var(--ok-soft); color: var(--ok); }
+.pill-muted { background: var(--surface-2); color: var(--muted); }
+.qty-cell { display: inline-flex; align-items: center; gap: 8px; }
+.qty-cell b { font-variant-numeric: tabular-nums; font-size: 15px; }
+.loc-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; font-size: 13px; white-space: nowrap; }
+.loc-chip svg { width: 12px; height: 12px; }
+.loc-none { color: var(--muted); font-size: 13px; }
+
+/* ---------- home: product card + hits ---------- */
+.finder { display: flex; flex-direction: column; gap: 12px; }
+.results { display: flex; flex-direction: column; gap: 10px; }
+.results:empty { display: none; }
+.pcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow); }
+.pcard-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.pcard-name { font-size: 22px; margin: 0; font-weight: 700; line-height: 1.4; text-wrap: balance; }
+.pcard-meta { color: var(--muted); font-size: 13.5px; display: flex; gap: 6px 12px; flex-wrap: wrap; }
+.pcard-facts { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.fact { background: var(--surface-2); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fact-label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.fact-val { font-size: 24px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.fact-loc { background: var(--accent-soft); }
+.fact-loc .fact-val { font-size: 30px; color: var(--accent-strong); display: flex; align-items: center; gap: 8px; }
+.fact-loc .fact-val svg { width: 22px; height: 22px; flex: none; }
+.pcard-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 560px) {
+  .pcard-facts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .fact-loc { grid-column: 1 / -1; }
+}
+.hits { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.hits > li + li { border-top: 1px solid var(--line); }
+.hit { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; width: 100%; padding: 11px 16px; border: 0; background: none; text-align: start; cursor: pointer; color: var(--ink); }
+.hit:hover { background: var(--surface-2); }
+.hit-2 { grid-template-columns: minmax(0, 1fr) auto; }
+.cell-name { font-weight: 600; display: block; overflow-wrap: anywhere; }
+.cell-sub { font-size: 12.5px; color: var(--muted); display: flex; gap: 4px 10px; flex-wrap: wrap; align-items: center; }
+.msg { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 14px 16px; display: flex; gap: 10px 16px; align-items: center; flex-wrap: wrap; }
+.msg p { margin: 0; flex: 1 1 240px; }
+.msg-bad { border-color: var(--bad); border-style: solid; background: var(--bad-soft); }
+
+/* ---------- stats ---------- */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; text-align: start; color: var(--ink); min-width: 0; }
+button.tile { cursor: pointer; font: inherit; }
+button.tile:hover { border-color: var(--accent); }
+.tile-label { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.tile-value { font-size: 26px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.tile-sub { font-size: 12.5px; color: var(--muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.dot-warn { background: var(--warn); }
+.dot-ok { background: var(--ok); }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.list > li + li { border-top: 1px solid var(--line); }
+.list .hit { padding-inline: 2px; }
+.empty { color: var(--muted); margin: 0; padding: 6px 0; }
+.welcome { gap: 10px; }
+.welcome p { margin: 0; max-width: 68ch; }
+
+/* ---------- tables ---------- */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: start; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); white-space: nowrap; }
+.tbl td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl .num-col { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl-products { min-width: 760px; }
+.row-link { cursor: pointer; }
+.row-link:hover td { background: var(--surface-2); }
+.row-flash td { animation: flash 1.2s ease-out; }
+@keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
+.table-foot { display: flex; gap: 6px 18px; flex-wrap: wrap; color: var(--muted); font-size: 13px; padding: 4px 2px 0; }
+.toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 10px; align-items: center; }
+@media (max-width: 860px) { .toolbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .toolbar .scanbox { grid-column: 1 / -1; } }
+@media (max-width: 420px) { .toolbar { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- point of sale ---------- */
+.pos { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+@media (max-width: 920px) { .pos { grid-template-columns: minmax(0, 1fr); } }
+.pos-main { display: flex; flex-direction: column; gap: 14px; }
+.pos-side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); display: flex; flex-direction: column; gap: 14px; }
+@media (max-width: 920px) { .pos-side { position: static; } }
+.tbl-cart { min-width: 600px; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stepper button { width: 32px; height: 34px; border: 0; background: var(--surface-2); cursor: pointer; font-size: 17px; font-weight: 600; color: var(--ink); }
+.stepper button:hover { background: var(--accent-soft); }
+.stepper input { width: 52px; height: 34px; border: 0; border-inline: 1px solid var(--line); text-align: center; background: var(--surface); font-variant-numeric: tabular-nums; }
+.stepper input:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+.price-in { width: 92px; }
+.warn-text { color: var(--warn); font-weight: 600; }
+.grand { display: flex; flex-direction: column; gap: 0; }
+.grand-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.grand-val { font-size: 46px; font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; }
+.side-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 13.5px; }
+.last-sale { font-size: 13.5px; color: var(--muted); display: flex; gap: 6px 12px; flex-wrap: wrap; align-items: center; padding-inline: 4px; }
+
+/* ---------- sales ---------- */
+.stats-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .stats-3 { grid-template-columns: minmax(0, 1fr); } }
+.sales-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+@media (max-width: 920px) { .sales-layout { grid-template-columns: minmax(0, 1fr); } }
+.sales-list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.sale + .sale { border-top: 1px solid var(--line); }
+.sale > summary { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; gap: 4px 14px; padding: 12px 16px; cursor: pointer; list-style: none; align-items: center; }
+.sale > summary::-webkit-details-marker { display: none; }
+.sale > summary:hover { background: var(--surface-2); }
+.sale-no { font-weight: 700; font-variant-numeric: tabular-nums; }
+.sale-when { color: var(--muted); font-size: 13.5px; display: flex; gap: 4px 10px; flex-wrap: wrap; align-items: center; }
+.sale-total { font-weight: 700; text-align: end; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sale-profit { display: block; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.sale.is-cancelled .sale-total { text-decoration: line-through; color: var(--muted); }
+.sale-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+.sale-body .tbl { font-size: 13.5px; border: 1px solid var(--line); border-radius: 8px; }
+.sale-note { margin: 0; color: var(--muted); font-size: 13.5px; }
+.best { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.best-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.best-name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.best-val { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: var(--accent-soft); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+/* ---------- labels ---------- */
+.labels-layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start; }
+@media (max-width: 980px) { .labels-layout { grid-template-columns: minmax(0, 1fr); } }
+.lbl-list { max-height: 560px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+.lbl-row { display: grid; grid-template-columns: auto minmax(0, 1fr) 84px; gap: 12px; align-items: center; padding: 9px 12px; }
+.lbl-row + .lbl-row { border-top: 1px solid var(--line); }
+.lbl-row label { display: contents; cursor: pointer; }
+.lbl-row .in { padding: 6px 8px; }
+.lbl-tools { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; }
+.preview-box { overflow: auto; direction: ltr; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.sheet-zoom .sheet { box-shadow: 0 2px 14px rgba(0, 0, 0, .18); }
+.sheet-zoom .label { outline: 1px dashed #c4cfcd; outline-offset: -1px; }
+
+/* paper is always white: label sheets use fixed print colors in both themes */
+.sheet { width: 210mm; height: 297mm; display: grid; grid-template-columns: repeat(3, 70mm); grid-template-rows: repeat(8, 37.125mm); background: #fff; color: #000; overflow: hidden; break-after: page; page-break-after: always; direction: ltr; }
+.sheet:last-child { break-after: auto; page-break-after: auto; }
+.label { padding: 3mm 4mm 2.5mm; display: flex; flex-direction: column; justify-content: center; gap: 1.2mm; overflow: hidden; font-family: var(--font-body); }
+.label-name { font-size: 9pt; font-weight: 600; line-height: 1.3; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.label .barcode { display: block; width: 100%; height: 13mm; }
+.label-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 2mm; }
+.label-code { font-family: var(--font-mono); font-size: 8.5pt; letter-spacing: .06em; }
+.label-price { font-size: 11pt; font-weight: 700; }
+#print-root { display: none; }
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { background: #fff !important; }
+  #app, #toasts, dialog { display: none !important; }
+  #print-root { display: block !important; }
+}
+
+/* ---------- settings ---------- */
+.settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .settings-grid { grid-template-columns: minmax(0, 1fr); } }
+.tips { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 8px; }
+.panel p { margin: 0; }
+.panel h3 { margin: 6px 0 0; font-size: 15px; }
+
+/* ---------- dialogs & toasts ---------- */
+dialog { border: 0; padding: 0; border-radius: 14px; background: var(--surface); color: var(--ink); width: min(640px, calc(100vw - 24px)); max-height: calc(100vh - 24px); box-shadow: 0 24px 70px rgba(0, 0, 0, .35); }
+dialog::backdrop { background: var(--scrim); }
+.dlg-small { width: min(440px, calc(100vw - 24px)); }
+.dlg-form { display: flex; flex-direction: column; max-height: calc(100vh - 24px); }
+.dlg-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.dlg-body { padding: 18px 20px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+.dlg-foot { display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line); flex-wrap: wrap; align-items: center; }
+.spacer { flex: 1; }
+.form-err { color: var(--bad); font-weight: 600; margin: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.form-err:empty { display: none; }
+.confirm-msg { margin: 0; font-size: 16px; }
+#toasts { position: fixed; inset-inline: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; z-index: 100; padding-inline: 16px; }
+.toast { background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-weight: 600; box-shadow: var(--shadow); max-width: 560px; transition: opacity .3s, transform .3s; }
+.toast-bad { background: var(--bad); color: var(--on-bad); }
+.toast.out { opacity: 0; transform: translateY(8px); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="app"><p style="padding:24px">جارٍ التحميل…</p></div>
+<div id="print-root" aria-hidden="true"></div>
+<dialog id="dlg-product" aria-labelledby="pf-title"></dialog>
+<dialog id="dlg-confirm" class="dlg-small"></dialog>
+<div id="toasts" aria-live="polite"></div>
+<noscript><p style="padding:24px">يحتاج هذا البرنامج إلى تفعيل JavaScript. This app needs JavaScript.</p></noscript>
+
+<script>
+'use strict';
+
+/* ================= Text (Arabic + English) ================= */
+const STR = {
+  ar: {
+    appName: 'دفتر المخزن',
+    nav_home: 'الرئيسية', nav_sell: 'بيع', nav_products: 'المنتجات', nav_receive: 'استلام بضاعة',
+    nav_sales: 'المبيعات', nav_labels: 'الملصقات', nav_settings: 'الإعدادات',
+    langSwitch: 'English',
+    save: 'حفظ', cancel: 'إلغاء', close: 'إغلاق', edit: 'تعديل', sell: 'بيع', receive: 'استلام', remove: 'إزالة',
+    where: 'مكانه في المحل', qty: 'الكمية', price: 'السعر',
+    noLocation: 'بدون مكان', noCategory: 'بدون فئة',
+    st_ok: 'متوفر', st_low: 'قليل', st_out: 'نافد', st_neg: 'راجع العدد',
+
+    home_title: 'ابحث عن منتج',
+    home_sub: 'امسح الباركود أو اكتب جزءاً من الاسم لتعرف مكانه والكمية الموجودة.',
+    scan_ph: 'امسح الباركود أو اكتب اسم المنتج',
+    notFound: 'لا يوجد منتج بالباركود {code}',
+    addAsNew: 'أضفه كمنتج جديد',
+    noResults: 'لا توجد نتائج لـ "{q}"',
+    moreResults: 'وهناك نتائج أخرى: {n}. اكتب كلمات أكثر لتضييق البحث.',
+    stat_today: 'مبيعات اليوم', stat_todaySub: 'عمليات البيع: {n}',
+    stat_profit: 'ربح اليوم', stat_profitSub: 'القطع المباعة: {n}',
+    stat_low: 'قليل أو نافد', stat_lowSub: 'النافد: {n}',
+    stat_products: 'المنتجات', stat_productsSub: 'الفئات: {n}',
+    stat_units: 'القطع في المحل', stat_unitsSub: 'الأماكن: {n}',
+    stat_value: 'قيمة المخزون بسعر الشراء', stat_valueSub: 'بسعر البيع: {v}',
+    low_title: 'منتجات تحتاج طلب', low_empty: 'كل المنتجات متوفرة بكمية كافية.', low_all: 'عرض الكل',
+    recent_title: 'آخر مبيعات اليوم', recent_empty: 'لا توجد مبيعات اليوم بعد.', recent_all: 'كل المبيعات',
+    welcome_title: 'أهلاً بك. قائمة المنتجات فارغة',
+    welcome_text: 'أدخل البضاعة رفّاً رفّاً: امسح الباركود الموجود على علبة المنتج، ثم اكتب الاسم والسعر والكمية والمكان.',
+    welcome_add: 'إضافة أول منتج', welcome_sample: 'جرّب ببيانات تجريبية',
+    sample_banner: 'تشاهد الآن بيانات تجريبية. احذفها قبل إدخال بضاعة المحل الحقيقية.',
+    sample_remove: 'حذف البيانات التجريبية', sample_removed: 'تم حذف البيانات التجريبية', sample_loaded: 'تم تحميل البيانات التجريبية',
+    sample_confirm: 'حذف كل المنتجات التجريبية ومبيعاتها؟',
+    backup_never: 'لم تحفظ أي نسخة احتياطية بعد. احفظ نسخة حتى لا تضيع البيانات إذا تعطل الكمبيوتر.',
+    backup_old: 'آخر نسخة احتياطية كانت في {date}. احفظ نسخة جديدة الآن.',
+    backup_now: 'احفظ نسخة الآن',
+    storage_warn: 'المتصفح لا يسمح بحفظ البيانات هنا، لذلك لن تُحفظ التغييرات. افتح الملف في Google Chrome.',
+    save_failed: 'لم يتم الحفظ. أعد المحاولة، وإذا تكرر الخطأ احفظ نسخة احتياطية.',
+    conflict: 'تغيرت البيانات من نافذة أخرى، فتم تحميل أحدث نسخة. أعد آخر خطوة.',
+
+    products_title: 'المنتجات',
+    prod_search_ph: 'ابحث بالاسم أو الباركود أو الفئة أو المكان',
+    all_categories: 'كل الفئات',
+    stock_all: 'كل الكميات', stock_low: 'قليل أو نافد', stock_out: 'نافد فقط',
+    sort_name: 'ترتيب: الاسم', sort_location: 'ترتيب: المكان', sort_qty: 'ترتيب: الأقل كمية', sort_new: 'ترتيب: الأحدث',
+    add_product: 'إضافة منتج', export_csv: 'تصدير إلى Excel',
+    col_product: 'المنتج', col_barcode: 'الباركود', col_location: 'المكان', col_qty: 'الكمية', col_price: 'سعر البيع',
+    products_empty: 'لا توجد منتجات تطابق البحث.', products_none: 'لم تُضف أي منتج بعد.',
+    foot_shown: 'المعروض: {shown} من {total}', foot_units: 'القطع: {n}', foot_value: 'القيمة بسعر الشراء: {v}',
+    csv_done: 'تم تنزيل ملف Excel في مجلد التنزيلات (Downloads)',
+    csv_head: 'الاسم,الباركود,الفئة,المكان,الكمية,سعر الشراء,سعر البيع,حد التنبيه,ملاحظات',
+
+    pf_new: 'منتج جديد', pf_edit: 'تعديل منتج',
+    pf_barcode: 'الباركود',
+    pf_barcode_hint: 'امسح الباركود الموجود على العلبة. إذا لم يكن عليها باركود اتركه فارغاً، وسيُنشأ رقم تلقائياً لتطبعه على ملصق.',
+    pf_generate: 'إنشاء رقم',
+    pf_name: 'اسم المنتج', pf_name_ph: 'مثال: ماوس Logitech M185 لاسلكي',
+    pf_category: 'الفئة', pf_category_ph: 'كيبورد، ماوس، سماعات…',
+    pf_location: 'المكان في المحل', pf_location_ph: 'مثال: رف A2 أو المخزن',
+    pf_cost: 'سعر الشراء', pf_price: 'سعر البيع', pf_qty: 'الكمية الموجودة', pf_min: 'نبّهني عندما تصبح الكمية',
+    pf_notes: 'ملاحظات', pf_notes_ph: 'اللون، الموديل، المورّد…',
+    pf_delete: 'حذف المنتج', pf_save_next: 'حفظ وإضافة التالي',
+    pf_recv_hint: 'منتج جديد: اكتب الكمية المستلمة في خانة "الكمية الموجودة".',
+    err_name: 'اكتب اسم المنتج.', err_dup: 'هذا الباركود مسجّل لمنتج آخر: {name}',
+    err_code: 'الباركود يقبل الأرقام والحروف الإنجليزية فقط.', err_num: 'اكتب رقماً صحيحاً في الخانة المحددة.',
+    open_it: 'افتح ذلك المنتج',
+    saved: 'تم حفظ "{name}"', deleted: 'تم حذف المنتج',
+    del_confirm: 'حذف "{name}"؟ المبيعات القديمة تبقى في السجل.',
+
+    sell_title: 'بيع', sell_ph: 'امسح الباركود أو اكتب الاسم ثم اضغط Enter',
+    cart_empty: 'امسح منتجاً لإضافته إلى الفاتورة.',
+    col_unit: 'السعر', col_line: 'المجموع',
+    in_stock_n: 'في المخزن: {n}', over_stock: 'الموجود في المخزن {n} فقط',
+    items_n: 'عدد القطع: {n}', lines_n: 'الأصناف: {n}',
+    total: 'الإجمالي',
+    sale_note_ph: 'ملاحظة (اختياري): اسم الزبون أو رقمه',
+    complete_sale: 'إتمام البيع', clear_cart: 'إفراغ الفاتورة',
+    sale_done: 'تم البيع رقم {no}: {total}',
+    last_sale: 'آخر بيع: رقم {no}، {total}', undo_sale: 'إلغاء هذا البيع',
+    pick_one: 'وجدنا أكثر من منتج. اختر واحداً:',
+
+    recv_title: 'استلام بضاعة',
+    recv_intro: 'عند وصول بضاعة جديدة: امسح كل منتج واكتب الكمية المستلمة، ثم اضغط "أضف إلى المخزن".',
+    recv_ph: 'امسح باركود المنتج المستلم',
+    recv_empty: 'امسح منتجاً لإضافته إلى قائمة الاستلام. إذا كان المنتج غير مسجّل ستُفتح نافذة لإضافته.',
+    col_now: 'الموجود الآن', col_received: 'المستلم', col_cost: 'سعر الشراء',
+    recv_note_ph: 'المورّد أو ملاحظة (اختياري)',
+    recv_submit: 'أضف إلى المخزن', recv_done: 'تمت الإضافة إلى المخزن. القطع المضافة: {n}',
+    recv_recent: 'آخر عمليات الاستلام', recv_recent_empty: 'لا توجد عمليات استلام بعد.',
+    recv_units: 'القطع: {n}', recv_cost_total: 'التكلفة: {v}',
+
+    sales_title: 'المبيعات',
+    p_today: 'اليوم', p_week: 'آخر 7 أيام', p_month: 'هذا الشهر', p_all: 'الكل',
+    s_count: 'عدد المبيعات', s_revenue: 'الإيرادات', s_profit: 'الربح',
+    s_countSub: 'القطع المباعة: {n}', s_revenueSub: 'متوسط البيع: {v}', s_profitSub: 'سعر البيع − سعر الشراء',
+    best_title: 'الأكثر مبيعاً', best_line: 'القطع: {n} · {v}',
+    sales_list: 'سجل المبيعات', sales_empty: 'لا توجد مبيعات في هذه الفترة.',
+    sale_no: 'رقم {no}', cancelled: 'ملغاة', pieces: 'القطع: {n}',
+    cancel_sale: 'إلغاء البيع وإرجاع البضاعة',
+    cancel_confirm: 'إلغاء البيع رقم {no}؟ ستعود الكميات إلى المخزن.',
+    sale_cancelled: 'تم إلغاء البيع رقم {no} وإرجاع البضاعة',
+
+    labels_title: 'طباعة الملصقات',
+    labels_intro: 'المنتجات التي عليها باركود من المصنع لا تحتاج ملصقاً. اطبع ملصقات للمنتجات التي أنشأ البرنامج رقمها.',
+    labels_noprinter: 'لا توجد طابعة؟ اضغط "طباعة"، ثم اختر "حفظ بتنسيق PDF" (Save as PDF)، واطبع الملف في أي مكتبة على ورق ملصقات A4 فيه 24 ملصقاً (3 × 8).',
+    labels_search_ph: 'ابحث أو امسح باركود',
+    labels_only_gen: 'فقط المنتجات التي أنشأ البرنامج رقمها',
+    labels_price: 'اطبع السعر على الملصق',
+    labels_skip: 'ملصقات مستعملة في أول الورقة',
+    labels_skip_hint: 'إذا استعملت جزءاً من الورقة سابقاً، اكتب عدد الملصقات المستعملة ليبدأ الطبع بعدها.',
+    labels_select_all: 'اختيار كل المعروض', labels_clear: 'إلغاء الاختيار',
+    labels_copies: 'العدد',
+    labels_summary: 'الملصقات: {n} · الأوراق: {p}',
+    labels_print: 'طباعة',
+    labels_none: 'اختر منتجات من القائمة لطباعة ملصقاتها.',
+    labels_preview: 'معاينة الورقة الأولى',
+    labels_more: 'وأوراق أخرى بعدها: {n}',
+    labels_empty: 'لا توجد منتجات هنا.',
+    labels_options: 'الطباعة',
+
+    settings_title: 'الإعدادات',
+    set_shop: 'المحل',
+    set_store: 'اسم المحل', set_store_ph: 'يظهر في أعلى الصفحة',
+    set_currency: 'رمز العملة', set_currency_hint: 'يظهر بجانب كل الأسعار.',
+    set_min: 'حد التنبيه للمنتجات الجديدة', set_min_hint: 'عندما تصل كمية المنتج إلى هذا الرقم يظهر في "منتجات تحتاج طلب".',
+    set_sound: 'صوت عند مسح الباركود', set_lang: 'اللغة',
+    backup_title: 'النسخ الاحتياطي',
+    backup_text: 'البيانات محفوظة داخل متصفح هذا الكمبيوتر فقط. احفظ نسخة احتياطية مرة في الأسبوع على فلاشة، أو أرسلها لنفسك، حتى لا تضيع إذا تعطل الكمبيوتر.',
+    backup_download: 'تنزيل نسخة احتياطية', backup_restore: 'استرجاع من نسخة احتياطية',
+    backup_last: 'آخر نسخة: {date}', backup_none: 'لا توجد نسخة احتياطية بعد.',
+    backup_saved: 'تم تنزيل النسخة الاحتياطية في مجلد التنزيلات (Downloads)',
+    restore_bad: 'هذا الملف ليس نسخة احتياطية من دفتر المخزن.',
+    restore_confirm: 'استبدال البيانات الحالية (المنتجات: {a}) بالنسخة المحفوظة في {date} (المنتجات: {b})؟',
+    restore_ok: 'استبدال البيانات',
+    restored: 'تم استرجاع النسخة الاحتياطية',
+    data_title: 'البيانات',
+    data_counts: 'المنتجات: {p} · المبيعات: {s} · عمليات الاستلام: {r}',
+    tips_title: 'نصائح مهمة',
+    tip1: 'استخدم نفس المتصفح دائماً (Google Chrome). كل متصفح يحفظ بيانات منفصلة.',
+    tip2: 'لا تمسح بيانات التصفح أو ملفات تعريف الارتباط (Cookies) في هذا المتصفح.',
+    tip3: 'قارئ الباركود USB يعمل مثل الكيبورد ولا يحتاج تعريفاً. وجّهه إلى الباركود وسيكتب الرقم ويضغط Enter وحده.',
+    tip4: 'إذا ظهرت رموز غريبة عند المسح، غيّر لغة الكيبورد إلى English بالضغط على Alt + Shift.',
+    tip5: 'احفظ نسخة احتياطية كل أسبوع.'
+  },
+  en: {
+    appName: 'Stock Book',
+    nav_home: 'Home', nav_sell: 'Sell', nav_products: 'Products', nav_receive: 'Receive stock',
+    nav_sales: 'Sales', nav_labels: 'Labels', nav_settings: 'Settings',
+    langSwitch: 'العربية',
+    save: 'Save', cancel: 'Cancel', close: 'Close', edit: 'Edit', sell: 'Sell', receive: 'Receive', remove: 'Remove',
+    where: 'Where it is', qty: 'In stock', price: 'Price',
+    noLocation: 'No location', noCategory: 'No category',
+    st_ok: 'In stock', st_low: 'Low', st_out: 'Out', st_neg: 'Recount',
+
+    home_title: 'Find a product',
+    home_sub: 'Scan a barcode or type part of a name to see where it is and how many are left.',
+    scan_ph: 'Scan a barcode or type a product name',
+    notFound: 'No product has the barcode {code}',
+    addAsNew: 'Add it as a new product',
+    noResults: 'Nothing matches "{q}"',
+    moreResults: '{n} more results. Type more words to narrow the search.',
+    stat_today: "Today's sales", stat_todaySub: 'Sales made: {n}',
+    stat_profit: "Today's profit", stat_profitSub: 'Units sold: {n}',
+    stat_low: 'Low or out of stock', stat_lowSub: 'Out of stock: {n}',
+    stat_products: 'Products', stat_productsSub: 'Categories: {n}',
+    stat_units: 'Units in store', stat_unitsSub: 'Locations: {n}',
+    stat_value: 'Stock value at cost', stat_valueSub: 'At selling price: {v}',
+    low_title: 'Needs reordering', low_empty: 'Every product has enough stock.', low_all: 'See all',
+    recent_title: "Today's latest sales", recent_empty: 'No sales yet today.', recent_all: 'All sales',
+    welcome_title: 'Welcome. Your product list is empty',
+    welcome_text: 'Enter the stock one shelf at a time: scan the barcode on the product box, then type the name, price, quantity and location.',
+    welcome_add: 'Add the first product', welcome_sample: 'Try it with sample data',
+    sample_banner: "You're looking at sample data. Remove it before entering the store's real stock.",
+    sample_remove: 'Remove sample data', sample_removed: 'Sample data removed', sample_loaded: 'Sample data loaded',
+    sample_confirm: 'Remove all sample products and their sales?',
+    backup_never: "You haven't saved a backup yet. Save one so the data isn't lost if the computer breaks.",
+    backup_old: 'Your last backup was on {date}. Save a new one now.',
+    backup_now: 'Back up now',
+    storage_warn: "This browser isn't letting the app save data here, so changes will be lost. Open the file in Google Chrome.",
+    save_failed: "Couldn't save. Try again, and if it keeps failing, download a backup.",
+    conflict: 'The data was changed in another window, so the latest version was loaded. Please repeat your last step.',
+
+    products_title: 'Products',
+    prod_search_ph: 'Search by name, barcode, category or location',
+    all_categories: 'All categories',
+    stock_all: 'All quantities', stock_low: 'Low or out', stock_out: 'Out of stock only',
+    sort_name: 'Sort: name', sort_location: 'Sort: location', sort_qty: 'Sort: lowest quantity', sort_new: 'Sort: newest',
+    add_product: 'Add product', export_csv: 'Export to Excel',
+    col_product: 'Product', col_barcode: 'Barcode', col_location: 'Location', col_qty: 'Qty', col_price: 'Price',
+    products_empty: 'No products match the search.', products_none: "You haven't added any products yet.",
+    foot_shown: 'Showing {shown} of {total}', foot_units: 'Units: {n}', foot_value: 'Value at cost: {v}',
+    csv_done: 'The Excel file was saved to your Downloads folder',
+    csv_head: 'Name,Barcode,Category,Location,Quantity,Cost price,Selling price,Warn at,Notes',
+
+    pf_new: 'New product', pf_edit: 'Edit product',
+    pf_barcode: 'Barcode',
+    pf_barcode_hint: "Scan the barcode on the box. If there isn't one, leave this empty and a code is created for you to print on a label.",
+    pf_generate: 'Generate',
+    pf_name: 'Product name', pf_name_ph: 'e.g. Logitech M185 wireless mouse',
+    pf_category: 'Category', pf_category_ph: 'Keyboards, mice, headsets…',
+    pf_location: 'Location in the store', pf_location_ph: 'e.g. Shelf A2 or Back room',
+    pf_cost: 'Cost price', pf_price: 'Selling price', pf_qty: 'Quantity on hand', pf_min: 'Warn me when quantity reaches',
+    pf_notes: 'Notes', pf_notes_ph: 'Colour, model, supplier…',
+    pf_delete: 'Delete product', pf_save_next: 'Save and add next',
+    pf_recv_hint: 'New product: enter the quantity you received in "Quantity on hand".',
+    err_name: 'Enter the product name.', err_dup: 'This barcode already belongs to: {name}',
+    err_code: 'Barcodes can only contain digits and English letters.', err_num: 'Enter a valid number in the highlighted field.',
+    open_it: 'Open that product',
+    saved: 'Saved "{name}"', deleted: 'Product deleted',
+    del_confirm: 'Delete "{name}"? Past sales stay in the records.',
+
+    sell_title: 'Sell', sell_ph: 'Scan a barcode or type a name, then press Enter',
+    cart_empty: 'Scan a product to add it to the sale.',
+    col_unit: 'Price', col_line: 'Total',
+    in_stock_n: 'In stock: {n}', over_stock: 'Only {n} in stock',
+    items_n: 'Units: {n}', lines_n: 'Lines: {n}',
+    total: 'Total',
+    sale_note_ph: "Note (optional): customer's name or phone",
+    complete_sale: 'Complete sale', clear_cart: 'Clear sale',
+    sale_done: 'Sale #{no} saved: {total}',
+    last_sale: 'Last sale: #{no}, {total}', undo_sale: 'Cancel this sale',
+    pick_one: 'More than one product matches. Pick one:',
+
+    recv_title: 'Receive stock',
+    recv_intro: 'When new stock arrives, scan each product and enter the quantity received, then press "Add to stock".',
+    recv_ph: 'Scan the barcode of a received product',
+    recv_empty: "Scan a product to add it to the delivery list. If it isn't registered yet, a window opens to add it.",
+    col_now: 'Now', col_received: 'Received', col_cost: 'Cost price',
+    recv_note_ph: 'Supplier or note (optional)',
+    recv_submit: 'Add to stock', recv_done: 'Added to stock. Units added: {n}',
+    recv_recent: 'Recent deliveries', recv_recent_empty: 'No deliveries recorded yet.',
+    recv_units: 'Units: {n}', recv_cost_total: 'Cost: {v}',
+
+    sales_title: 'Sales',
+    p_today: 'Today', p_week: 'Last 7 days', p_month: 'This month', p_all: 'All time',
+    s_count: 'Sales', s_revenue: 'Revenue', s_profit: 'Profit',
+    s_countSub: 'Units sold: {n}', s_revenueSub: 'Average sale: {v}', s_profitSub: 'Selling price − cost price',
+    best_title: 'Best sellers', best_line: 'Units: {n} · {v}',
+    sales_list: 'Sales record', sales_empty: 'No sales in this period.',
+    sale_no: '#{no}', cancelled: 'Cancelled', pieces: 'Units: {n}',
+    cancel_sale: 'Cancel sale and return items',
+    cancel_confirm: 'Cancel sale #{no}? The items go back into stock.',
+    sale_cancelled: 'Sale #{no} cancelled and items returned to stock',
+
+    labels_title: 'Print labels',
+    labels_intro: "Products with a factory barcode don't need a label. Print labels for products whose code was made by this app.",
+    labels_noprinter: 'No printer? Press Print, choose "Save as PDF", then print the file at any print shop on A4 sticker paper with 24 labels (3 × 8).',
+    labels_search_ph: 'Search or scan a barcode',
+    labels_only_gen: 'Only products with codes made by this app',
+    labels_price: 'Print the price on the label',
+    labels_skip: 'Labels already used on the sheet',
+    labels_skip_hint: 'If part of the sheet was used before, enter how many labels are gone and printing starts after them.',
+    labels_select_all: 'Select all shown', labels_clear: 'Clear selection',
+    labels_copies: 'Copies',
+    labels_summary: 'Labels: {n} · Sheets: {p}',
+    labels_print: 'Print',
+    labels_none: 'Pick products from the list to print their labels.',
+    labels_preview: 'Preview of the first sheet',
+    labels_more: 'More sheets after this one: {n}',
+    labels_empty: 'No products here.',
+    labels_options: 'Printing',
+
+    settings_title: 'Settings',
+    set_shop: 'Store',
+    set_store: 'Store name', set_store_ph: 'Shown at the top of the page',
+    set_currency: 'Currency symbol', set_currency_hint: 'Shown next to every price.',
+    set_min: 'Low-stock warning for new products', set_min_hint: 'When a product reaches this quantity it appears in "Needs reordering".',
+    set_sound: 'Beep when scanning', set_lang: 'Language',
+    backup_title: 'Backup',
+    backup_text: "The data is stored only inside this computer's browser. Save a backup once a week to a USB stick, or send it to yourself, so nothing is lost if the computer breaks.",
+    backup_download: 'Download backup', backup_restore: 'Restore from backup',
+    backup_last: 'Last backup: {date}', backup_none: 'No backup saved yet.',
+    backup_saved: 'The backup was saved to your Downloads folder',
+    restore_bad: "This file isn't a Stock Book backup.",
+    restore_confirm: 'Replace the current data ({a} products) with the backup from {date} ({b} products)?',
+    restore_ok: 'Replace data',
+    restored: 'Backup restored',
+    data_title: 'Data',
+    data_counts: 'Products: {p} · Sales: {s} · Deliveries: {r}',
+    tips_title: 'Important tips',
+    tip1: 'Always use the same browser (Google Chrome). Each browser keeps its own separate data.',
+    tip2: "Don't clear this browser's browsing data or cookies.",
+    tip3: 'A USB barcode scanner works like a keyboard and needs no setup. Point it at a barcode and it types the number and presses Enter by itself.',
+    tip4: 'If scanning types strange symbols, switch the keyboard to English with Alt + Shift.',
+    tip5: 'Save a backup every week.'
+  }
+};
+
+let lang = 'ar';
+function t(key, vars) {
+  let s = (STR[lang] && STR[lang][key]) ?? STR.en[key] ?? key;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] ?? m));
+  return s;
+}
+
+/* ================= Helpers ================= */
+const APP_ID = 'stock-book';
+const DB_NAME = 'stock-book-db';
+const NAV = ['home', 'sell', 'products', 'receive', 'sales', 'labels', 'settings'];
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const round2 = n => Math.round((Number(n) || 0) * 100) / 100;
+const nowISO = () => new Date().toISOString();
+const sum = (arr, f) => arr.reduce((s, x) => s + f(x), 0);
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function normDigits(s) {
+  return String(s ?? '')
+    .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x660))
+    .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x6F0));
+}
+// French (AZERTY) keyboards turn scanned digits into these symbols
+const AZERTY = { '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5', '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0' };
+function normCode(s) {
+  let v = normDigits(s).trim();
+  if (v && [...v].every(c => c in AZERTY)) v = [...v].map(c => AZERTY[c]).join('');
+  return v;
+}
+const looksLikeCode = c => /^[0-9A-Za-z.\-]{4,}$/.test(c) && /\d/.test(c);
+function normText(s) {
+  return normDigits(s).toLowerCase()
+    .replace(/[ً-ْٰـ]/g, '')
+    .replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي');
+}
+function parseNum(s) {
+  let v = normDigits(s).replace(/[\s٬]/g, '').replace(/٫/g, '.');
+  if (v === '') return null;
+  if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(v)) v = v.replace(/,/g, '');
+  else v = v.replace(',', '.');
+  const n = Number(v);
+  return Number.isFinite(n) ? n : NaN;
+}
+function fmtNum(n) {
+  const v = round2(n);
+  return v.toLocaleString('en-US', Number.isInteger(v) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function money(n) {
+  const s = fmtNum(n);
+  const c = ((state && state.settings.currency) || '').trim();
+  if (!c) return s;
+  return [...c].length === 1 ? c + s : s + ' ' + c;
+}
+const moneyH = n => `<span class="num">${esc(money(n))}</span>`;
+const numH = n => `<span class="num">${esc(fmtNum(n))}</span>`;
+const locale = () => (lang === 'ar' ? 'ar-u-nu-latn' : 'en-GB');
+const fmtDateTime = iso => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+const fmtDate = iso => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium' }).format(new Date(iso));
+const fmtTime = iso => new Intl.DateTimeFormat(locale(), { timeStyle: 'short' }).format(new Date(iso));
+const isToday = iso => new Date(iso).toDateString() === new Date().toDateString();
+const pad2 = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+function download(filename, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* ================= Icons ================= */
+const ICON_SCAN = '<svg viewBox="0 0 30 24" aria-hidden="true"><g fill="currentColor"><rect x="1" y="2" width="2" height="20"/><rect x="5" y="2" width="1" height="20"/><rect x="8" y="2" width="3" height="20"/><rect x="13" y="2" width="1" height="20"/><rect x="16" y="2" width="2" height="20"/><rect x="20" y="2" width="1" height="20"/><rect x="23" y="2" width="3" height="20"/><rect x="28" y="2" width="1" height="20"/></g><rect x="0" y="11.2" width="30" height="1.6" style="fill:var(--bad)"/></svg>';
+const ICON_PIN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1.2a4.8 4.8 0 0 0-4.8 4.8c0 3.4 4.8 8.8 4.8 8.8s4.8-5.4 4.8-8.8A4.8 4.8 0 0 0 8 1.2zm0 6.6a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/></svg>';
+const BRAND = '<svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" style="fill:var(--bar-accent)"/><g style="fill:var(--bar)"><rect x="7" y="8" width="2.5" height="18"/><rect x="11.5" y="8" width="1.2" height="18"/><rect x="14.5" y="8" width="3.5" height="18"/><rect x="20" y="8" width="1.2" height="18"/><rect x="23" y="8" width="3.8" height="18"/></g></svg>';
+
+/* ================= Code 128 barcodes ================= */
+const C128 = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
+function code128Values(text) {
+  const vals = [];
+  if (/^\d+$/.test(text) && text.length % 2 === 0) {
+    vals.push(105);
+    for (let i = 0; i < text.length; i += 2) vals.push(Number(text.slice(i, i + 2)));
+  } else {
+    vals.push(104);
+    for (const ch of text) {
+      const c = ch.charCodeAt(0);
+      if (ch.length !== 1 || c < 32 || c > 126) throw new Error('unsupported character');
+      vals.push(c - 32);
+    }
+  }
+  let check = vals[0];
+  for (let i = 1; i < vals.length; i++) check += vals[i] * i;
+  vals.push(check % 103, 106);
+  return vals;
+}
+function barcodeSVG(text, height = 40) {
+  const vals = code128Values(text);
+  let x = 10;
+  let bars = '';
+  for (const v of vals) {
+    const pat = C128[v];
+    for (let k = 0; k < pat.length; k++) {
+      const w = Number(pat[k]);
+      if (k % 2 === 0) bars += `<rect x="${x}" y="0" width="${w}" height="${height}"/>`;
+      x += w;
+    }
+  }
+  const total = x + 10;
+  return `<svg class="barcode" viewBox="0 0 ${total} ${height}" preserveAspectRatio="none" shape-rendering="crispEdges" role="img" aria-label="${esc(text)}"><rect width="${total}" height="${height}" fill="#fff"/><g fill="#000">${bars}</g></svg>`;
+}
+
+/* ================= Data & storage ================= */
+const DEFAULT_SETTINGS = { storeName: '', currency: '$', lowDefault: 2, sound: true, lang: 'ar', nextCode: 1, nextSaleNo: 1, lastBackupAt: null };
+let state = null;
+let storageMode = 'memory'; // 'idb' | 'local' | 'memory'
+let db = null;
+let lastSavedRev = 0;
+let saveChain = Promise.resolve();
+
+const num0 = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+function normalizeState(s) {
+  s = s && typeof s === 'object' ? s : {};
+  const out = {
+    app: APP_ID, version: 1, rev: Number(s.rev) || 0,
+    settings: { ...DEFAULT_SETTINGS, ...(s.settings && typeof s.settings === 'object' ? s.settings : {}) },
+    products: [],
+    sales: Array.isArray(s.sales) ? s.sales.filter(x => x && Array.isArray(x.items)) : [],
+    stockIns: Array.isArray(s.stockIns) ? s.stockIns.filter(x => x && Array.isArray(x.items)) : []
+  };
+  for (const p of (Array.isArray(s.products) ? s.products : [])) {
+    if (!p || !p.id) continue;
+    out.products.push({
+      id: String(p.id), name: String(p.name || ''), barcode: String(p.barcode || ''),
+      category: String(p.category || ''), location: String(p.location || ''),
+      cost: round2(num0(p.cost)), price: round2(num0(p.price)),
+      qty: Math.round(num0(p.qty)), minQty: Math.max(0, Math.round(num0(p.minQty))),
+      notes: String(p.notes || ''), gen: !!p.gen, sample: !!p.sample,
+      createdAt: p.createdAt || null, updatedAt: p.updatedAt || null
+    });
+  }
+  return out;
+}
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) return reject(new Error('no indexedDB'));
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('kv');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    req.onblocked = () => reject(new Error('blocked'));
+  });
+}
+function loadStored() {
+  if (storageMode === 'idb') {
+    return new Promise((resolve, reject) => {
+      const req = db.transaction('kv', 'readonly').objectStore('kv').get('state');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  if (storageMode === 'local') {
+    const raw = localStorage.getItem(DB_NAME);
+    return Promise.resolve(raw ? JSON.parse(raw) : null);
+  }
+  return Promise.resolve(null);
+}
+// Writes only if nobody else saved since our last load/save; otherwise reports a conflict.
+function writeStored(snapshot, expectRev) {
+  if (storageMode === 'idb') {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('kv', 'readwrite');
+      const os = tx.objectStore('kv');
+      let result = 'conflict';
+      const g = os.get('state');
+      g.onsuccess = () => {
+        const cur = g.result;
+        if (cur && (Number(cur.rev) || 0) !== expectRev) return;
+        result = snapshot.rev;
+        os.put(snapshot, 'state');
+      };
+      tx.oncomplete = () => resolve(result);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('aborted'));
+    });
+  }
+  if (storageMode === 'local') {
+    const raw = localStorage.getItem(DB_NAME);
+    const cur = raw ? JSON.parse(raw) : null;
+    if (cur && (Number(cur.rev) || 0) !== expectRev) return Promise.resolve('conflict');
+    localStorage.setItem(DB_NAME, JSON.stringify(snapshot));
+    return Promise.resolve(snapshot.rev);
+  }
+  return Promise.resolve(snapshot.rev);
+}
+async function doSave() {
+  if (state.rev === lastSavedRev) return;
+  const res = await writeStored(state, lastSavedRev);
+  if (res === 'conflict') {
+    const stored = await loadStored();
+    state = normalizeState(stored);
+    lastSavedRev = state.rev;
+    renderAll();
+    toast(t('conflict'), 'bad');
+    return;
+  }
+  lastSavedRev = res;
+}
+function queueSave() {
+  saveChain = saveChain.then(doSave).catch(err => { console.error(err); toast(t('save_failed'), 'bad'); });
+}
+function commit() {
+  state.rev++;
+  queueSave();
+  refreshUI();
+}
+async function syncFromStorage() {
+  if (storageMode === 'memory' || state.rev !== lastSavedRev) return;
+  const stored = await loadStored();
+  if (stored && (Number(stored.rev) || 0) !== lastSavedRev) {
+    state = normalizeState(stored);
+    lastSavedRev = state.rev;
+    renderAll();
+  }
+}
+
+/* ================= Product helpers ================= */
+const getP = id => state.products.find(p => p.id === id);
+function findByBarcode(code) {
+  if (!code) return null;
+  let p = state.products.find(x => x.barcode === code);
+  if (!p && /^\d+$/.test(code)) {
+    const c = code.replace(/^0+/, '');
+    p = state.products.find(x => /^\d+$/.test(x.barcode) && x.barcode.replace(/^0+/, '') === c);
+  }
+  if (!p) {
+    const lc = code.toLowerCase();
+    p = state.products.find(x => x.barcode.toLowerCase() === lc);
+  }
+  return p || null;
+}
+function searchProducts(q) {
+  const tokens = normText(q).split(/\s+/).filter(Boolean);
+  if (!tokens.length) return [];
+  const first = tokens[0];
+  return state.products
+    .filter(p => {
+      const hay = normText([p.name, p.barcode, p.category, p.location, p.notes].join(' '));
+      return tokens.every(tk => hay.includes(tk));
+    })
+    .sort((a, b) => (normText(b.name).startsWith(first) - normText(a.name).startsWith(first)) || a.name.localeCompare(b.name, lang));
+}
+function stockState(p) {
+  if (p.qty < 0) return 'neg';
+  if (p.qty === 0) return 'out';
+  if (p.qty <= p.minQty) return 'low';
+  return 'ok';
+}
+function stockPill(p) {
+  const s = stockState(p);
+  if (s === 'ok') return '';
+  const icon = { low: '!', out: '×', neg: '?' }[s];
+  return `<span class="pill pill-${s}"><span class="pill-ic" aria-hidden="true">${icon}</span>${esc(t('st_' + s))}</span>`;
+}
+const qtyCell = p => `<span class="qty-cell"><b class="num">${p.qty}</b>${stockPill(p)}</span>`;
+const locChip = p => p.location
+  ? `<span class="loc-chip">${ICON_PIN}${esc(p.location)}</span>`
+  : `<span class="loc-none">${esc(t('noLocation'))}</span>`;
+function nextGenCode() {
+  let n = state.settings.nextCode || 1;
+  let code;
+  do { code = '20' + String(n).padStart(6, '0'); n++; } while (findByBarcode(code));
+  return code;
+}
+const uniq = arr => [...new Set(arr.filter(Boolean))].sort((a, b) => a.localeCompare(b, lang));
+
+/* ================= Sound ================= */
+let audioCtx = null;
+function beep(ok = true) {
+  if (!state.settings.sound) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const tm = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = ok ? 'sine' : 'square';
+    o.frequency.value = ok ? 1400 : 220;
+    const dur = ok ? 0.09 : 0.28;
+    g.gain.setValueAtTime(0.0001, tm);
+    g.gain.exponentialRampToValueAtTime(ok ? 0.12 : 0.06, tm + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, tm + dur);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(tm); o.stop(tm + dur + 0.02);
+  } catch (e) { /* sound is optional */ }
+}
+
+/* ================= Toasts & confirm ================= */
+function toast(msg, kind = 'ok') {
+  const el = document.createElement('div');
+  el.className = 'toast' + (kind === 'bad' ? ' toast-bad' : '');
+  el.textContent = msg;
+  const box = $('#toasts');
+  while (box.children.length >= 3) box.firstElementChild.remove();
+  box.append(el);
+  setTimeout(() => el.classList.add('out'), 3400);
+  setTimeout(() => el.remove(), 3800);
+}
+function confirmBox(msg, { okText, danger } = {}) {
+  return new Promise(resolve => {
+    const d = $('#dlg-confirm');
+    let done = false;
+    const finish = v => { if (done) return; done = true; if (d.open) d.close(); resolve(v); };
+    d.innerHTML = `<div class="dlg-form"><div class="dlg-body"><p class="confirm-msg">${esc(msg)}</p></div>
+      <footer class="dlg-foot"><span class="spacer"></span>
+      <button type="button" class="btn" data-r="0">${esc(t('cancel'))}</button>
+      <button type="button" class="btn ${danger ? 'btn-danger-solid' : 'btn-primary'}" data-r="1">${esc(okText || t('save'))}</button></footer></div>`;
+    d.onclick = e => { const b = e.target.closest('[data-r]'); if (b) finish(b.dataset.r === '1'); };
+    d.oncancel = e => { e.preventDefault(); finish(false); };
+    d.showModal();
+    $('[data-r="0"]', d).focus();
+  });
+}
+
+/* ================= UI state ================= */
+const ui = {
+  view: 'home',
+  homeQuery: '', homeHit: null,
+  cart: [], sellNote: '', sellMsg: null, flashPid: null,
+  recv: [], recvNote: '', recvMsg: null,
+  prod: { q: '', cat: '', stock: '', sort: 'name', msg: null },
+  salesPeriod: 'today',
+  labels: { sel: new Map(), onlyGen: true, showPrice: true, skip: 0, q: '' }
+};
+
+/* ================= Shell ================= */
+function renderAll() {
+  lang = state.settings.lang === 'en' ? 'en' : 'ar';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  if (!$('#topbar')) {
+    $('#app').innerHTML = '<header class="topbar" id="topbar"></header><div class="wrap"><div id="banners"></div><main id="view" tabindex="-1"></main></div>';
+  }
+  renderHeader();
+  renderBanners();
+  mountView();
+}
+function renderHeader() {
+  const name = state.settings.storeName.trim();
+  document.title = (name ? name + ' · ' : '') + t('appName');
+  $('#topbar').innerHTML = `<div class="topbar-in">
+    <a class="brand" href="#home">${BRAND}<span class="brand-text"><strong>${esc(name || t('appName'))}</strong>${name ? `<small>${esc(t('appName'))}</small>` : ''}</span></a>
+    <nav class="tabs" aria-label="${esc(t('appName'))}">${NAV.map(v => `<a href="#${v}" class="tab"${v === ui.view ? ' aria-current="page"' : ''}>${esc(t('nav_' + v))}</a>`).join('')}</nav>
+    <button type="button" class="lang-btn" data-action="toggle-lang" lang="${lang === 'ar' ? 'en' : 'ar'}">${esc(t('langSwitch'))}</button>
+  </div>`;
+}
+function banner(kind, text, actionHTML = '') {
+  const ic = kind === 'info' ? 'i' : '!';
+  return `<div class="banner banner-${kind}" role="status"><span class="banner-ic" aria-hidden="true">${ic}</span><p>${esc(text)}</p>${actionHTML}</div>`;
+}
+function renderBanners() {
+  const out = [];
+  if (storageMode === 'memory') out.push(banner('bad', t('storage_warn')));
+  if (state.products.some(p => p.sample)) out.push(banner('info', t('sample_banner'), `<button type="button" class="btn btn-sm" data-action="remove-sample">${esc(t('sample_remove'))}</button>`));
+  $('#banners').innerHTML = out.join('');
+}
+function mountView() {
+  const el = $('#view');
+  $$('.tab').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + ui.view));
+  $$('.tab[aria-current]').forEach(a => a.setAttribute('aria-current', 'page'));
+  views[ui.view].mount(el);
+}
+function refreshUI() {
+  renderBanners();
+  const v = views[ui.view];
+  if (v.refresh) v.refresh(); else v.mount($('#view'));
+}
+function go(view) {
+  if (location.hash !== '#' + view) location.hash = view;
+  else { ui.view = view; mountView(); }
+}
+function focusScan() {
+  const s = $('#view .scan-input');
+  if (s && !document.querySelector('dialog[open]')) s.focus();
+}
+const scanBox = (id, ph, value = '', cls = '') =>
+  `<div class="scanbox ${cls}">${ICON_SCAN}<input id="${id}" class="scan-input" type="text" autocomplete="off" spellcheck="false" placeholder="${esc(ph)}" aria-label="${esc(ph)}" value="${esc(value)}"></div>`;
+
+/* ================= Views ================= */
+const views = {};
+
+/* ----- Home ----- */
+views.home = {
+  mount(el) {
+    el.innerHTML = `<div class="stack">
+      <section class="finder">
+        <h1 class="h1">${esc(t('home_title'))}</h1>
+        <p class="sub">${esc(t('home_sub'))}</p>
+        ${scanBox('home-q', t('scan_ph'), ui.homeQuery)}
+        <div id="home-results" class="results" aria-live="polite"></div>
+      </section>
+      <div id="home-body" class="stack"></div>
+    </div>`;
+    this.refresh();
+    focusScan();
+  },
+  refresh() { renderHomeResults(); renderHomeBody(); }
+};
+function productCard(p) {
+  return `<article class="pcard">
+    <div class="pcard-head">
+      <div class="min0">
+        <h2 class="pcard-name">${esc(p.name)}</h2>
+        <div class="pcard-meta"><span>${esc(p.category || t('noCategory'))}</span><code>${esc(p.barcode)}</code></div>
+      </div>
+      ${stockPill(p) || `<span class="pill pill-ok"><span class="pill-ic" aria-hidden="true">✓</span>${esc(t('st_ok'))}</span>`}
+    </div>
+    <div class="pcard-facts">
+      <div class="fact fact-loc"><span class="fact-label">${esc(t('where'))}</span><span class="fact-val">${ICON_PIN}<span class="min0">${esc(p.location || t('noLocation'))}</span></span></div>
+      <div class="fact"><span class="fact-label">${esc(t('qty'))}</span><span class="fact-val num">${p.qty}</span></div>
+      <div class="fact"><span class="fact-label">${esc(t('price'))}</span><span class="fact-val">${moneyH(p.price)}</span></div>
+    </div>
+    <div class="pcard-actions">
+      <button type="button" class="btn btn-primary" data-action="sell-product" data-id="${esc(p.id)}">${esc(t('sell'))}</button>
+      <button type="button" class="btn" data-action="receive-product" data-id="${esc(p.id)}">${esc(t('receive'))}</button>
+      <button type="button" class="btn" data-action="edit-product" data-id="${esc(p.id)}">${esc(t('edit'))}</button>
+    </div>
+  </article>`;
+}
+function hitRow(p, action) {
+  return `<li><button type="button" class="hit" data-action="${action}" data-id="${esc(p.id)}">
+    <span class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code>${p.category ? `<span>${esc(p.category)}</span>` : ''}</span></span>
+    ${locChip(p)}
+    <span>${qtyCell(p)}</span>
+  </button></li>`;
+}
+function notFoundMsg(code, action) {
+  return `<div class="msg msg-bad" role="alert"><p>${esc(t('notFound', { code }))}</p>
+    <button type="button" class="btn btn-primary" data-action="${action}" data-code="${esc(code)}">${esc(t('addAsNew'))}</button></div>`;
+}
+function renderHomeResults() {
+  const el = $('#home-results'); if (!el) return;
+  const hit = ui.homeHit;
+  if (hit && hit.type === 'product') {
+    const p = getP(hit.id);
+    if (p) { el.innerHTML = productCard(p); return; }
+    ui.homeHit = null;
+  }
+  if (hit && hit.type === 'notfound') { el.innerHTML = notFoundMsg(hit.code, 'new-with-code'); return; }
+  const q = ui.homeQuery.trim();
+  if (!q) { el.innerHTML = ''; return; }
+  const m = searchProducts(q);
+  if (!m.length) { el.innerHTML = `<div class="msg"><p>${esc(t('noResults', { q }))}</p>${looksLikeCode(normCode(q)) ? `<button type="button" class="btn" data-action="new-with-code" data-code="${esc(normCode(q))}">${esc(t('addAsNew'))}</button>` : ''}</div>`; return; }
+  if (m.length === 1) { el.innerHTML = productCard(m[0]); return; }
+  el.innerHTML = `<ul class="hits">${m.slice(0, 8).map(p => hitRow(p, 'show-product')).join('')}</ul>${m.length > 8 ? `<p class="hint">${esc(t('moreResults', { n: m.length - 8 }))}</p>` : ''}`;
+}
+function backupReminder() {
+  if (!state.products.some(p => !p.sample)) return '';
+  const last = state.settings.lastBackupAt;
+  const btn = `<button type="button" class="btn btn-sm" data-action="backup">${esc(t('backup_now'))}</button>`;
+  if (!last) return banner('warn', t('backup_never'), btn);
+  if (Date.now() - new Date(last).getTime() > 7 * 864e5) return banner('warn', t('backup_old', { date: fmtDate(last) }), btn);
+  return '';
+}
+function tile(label, value, sub, extra = {}) {
+  const tag = extra.action ? 'button' : 'div';
+  const attrs = extra.action ? ` type="button" data-action="${extra.action}"` : '';
+  return `<${tag} class="tile"${attrs}><span class="tile-label">${extra.dot ? `<span class="dot dot-${extra.dot}" aria-hidden="true"></span>` : ''}${esc(label)}</span><span class="tile-value">${value}</span><span class="tile-sub">${sub}</span></${tag}>`;
+}
+function renderHomeBody() {
+  const el = $('#home-body'); if (!el) return;
+  const P = state.products;
+  if (!P.length) {
+    el.innerHTML = `<section class="panel welcome">
+      <h2 class="h2">${esc(t('welcome_title'))}</h2>
+      <p>${esc(t('welcome_text'))}</p>
+      <div class="btn-row"><button type="button" class="btn btn-primary" data-action="new-product">${esc(t('welcome_add'))}</button>
+      <button type="button" class="btn" data-action="load-sample">${esc(t('welcome_sample'))}</button></div>
+    </section>`;
+    return;
+  }
+  const units = sum(P, p => Math.max(0, p.qty));
+  const value = sum(P, p => Math.max(0, p.qty) * p.cost);
+  const valueSell = sum(P, p => Math.max(0, p.qty) * p.price);
+  const today = state.sales.filter(s => !s.cancelled && isToday(s.date));
+  const low = P.filter(p => stockState(p) !== 'ok').sort((a, b) => a.qty - b.qty || a.name.localeCompare(b.name, lang));
+  const outN = P.filter(p => p.qty <= 0).length;
+  const recent = today.slice(-6).reverse();
+  el.innerHTML = `${backupReminder()}
+    <section class="stats" aria-label="${esc(t('home_title'))}">
+      ${tile(t('stat_today'), moneyH(sum(today, s => s.total)), esc(t('stat_todaySub', { n: today.length })), { action: 'goto-sales' })}
+      ${tile(t('stat_profit'), moneyH(sum(today, s => s.profit)), esc(t('stat_profitSub', { n: sum(today, s => sum(s.items, i => i.qty)) })))}
+      ${tile(t('stat_low'), numH(low.length), esc(t('stat_lowSub', { n: outN })), { action: 'show-low', dot: low.length ? 'warn' : 'ok' })}
+      ${tile(t('stat_products'), numH(P.length), esc(t('stat_productsSub', { n: uniq(P.map(p => p.category)).length })))}
+      ${tile(t('stat_units'), numH(units), esc(t('stat_unitsSub', { n: uniq(P.map(p => p.location)).length })))}
+      ${tile(t('stat_value'), moneyH(value), esc(t('stat_valueSub', { v: money(valueSell) })))}
+    </section>
+    <div class="two-col">
+      <section class="panel">
+        <div class="panel-head"><h2 class="h2">${esc(t('low_title'))}</h2>${low.length > 8 ? `<button type="button" class="link-btn" data-action="show-low">${esc(t('low_all'))}</button>` : ''}</div>
+        ${low.length ? `<ul class="list">${low.slice(0, 8).map(p => hitRow(p, 'show-product')).join('')}</ul>` : `<p class="empty">${esc(t('low_empty'))}</p>`}
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h2 class="h2">${esc(t('recent_title'))}</h2>${state.sales.length ? `<button type="button" class="link-btn" data-action="goto-sales">${esc(t('recent_all'))}</button>` : ''}</div>
+        ${recent.length ? `<ul class="list">${recent.map(s => `<li><button type="button" class="hit hit-2" data-action="goto-sales">
+            <span class="min0"><span class="cell-name">${esc(t('sale_no', { no: s.no }))} · ${esc(fmtTime(s.date))}</span><span class="cell-sub">${esc(s.items.map(i => i.name).join('، '))}</span></span>
+            <span class="num-col"><b>${moneyH(s.total)}</b></span></button></li>`).join('')}</ul>` : `<p class="empty">${esc(t('recent_empty'))}</p>`}
+      </section>
+    </div>`;
+}
+function homeEnter(input) {
+  const raw = input.value;
+  const code = normCode(raw);
+  if (!code) return;
+  const p = findByBarcode(code);
+  if (p) { ui.homeHit = { type: 'product', id: p.id }; beep(true); renderHomeResults(); input.select(); return; }
+  const m = searchProducts(raw);
+  if (m.length === 1) { ui.homeHit = { type: 'product', id: m[0].id }; renderHomeResults(); input.select(); return; }
+  if (!m.length && looksLikeCode(code)) { ui.homeHit = { type: 'notfound', code }; beep(false); renderHomeResults(); input.select(); return; }
+  ui.homeHit = null; renderHomeResults();
+}
+
+/* ----- Sell ----- */
+views.sell = {
+  mount(el) {
+    el.innerHTML = `<div class="pos">
+      <section class="pos-main">
+        <h1 class="h1">${esc(t('sell_title'))}</h1>
+        ${scanBox('sell-scan', t('sell_ph'))}
+        <div id="sell-msg" class="results" aria-live="polite"></div>
+        <div id="sell-cart"></div>
+      </section>
+      <aside class="pos-side">
+        <div class="panel">
+          <div class="grand"><span class="grand-label">${esc(t('total'))}</span><span class="grand-val" id="sell-total"></span></div>
+          <div class="side-meta" id="sell-meta"></div>
+          <input id="sell-note" class="in" type="text" autocomplete="off" placeholder="${esc(t('sale_note_ph'))}" aria-label="${esc(t('sale_note_ph'))}" value="${esc(ui.sellNote)}">
+          <button type="button" class="btn btn-primary btn-lg btn-block" id="sell-complete" data-action="complete-sale">${esc(t('complete_sale'))}</button>
+          <button type="button" class="btn btn-ghost btn-block" id="sell-clear" data-action="clear-cart">${esc(t('clear_cart'))}</button>
+        </div>
+        <div id="sell-last" class="last-sale"></div>
+      </aside>
+    </div>`;
+    this.refresh();
+    focusScan();
+  },
+  refresh() { renderSellMsg(); renderCart(); renderSellTotals(); renderLastSale(); }
+};
+function renderSellMsg() {
+  const el = $('#sell-msg'); if (!el) return;
+  const m = ui.sellMsg;
+  if (!m) { el.innerHTML = ''; return; }
+  if (m.type === 'pick') {
+    const ps = m.ids.map(getP).filter(Boolean);
+    el.innerHTML = ps.length ? `<p class="hint">${esc(t('pick_one'))}</p><ul class="hits">${ps.map(p => hitRow(p, 'cart-add')).join('')}</ul>` : '';
+    return;
+  }
+  if (m.type === 'notfound') {
+    el.innerHTML = m.code ? notFoundMsg(m.code, 'sell-new-with-code') : `<div class="msg msg-bad" role="alert"><p>${esc(t('noResults', { q: m.q }))}</p></div>`;
+  }
+}
+function renderCart() {
+  const el = $('#sell-cart'); if (!el) return;
+  ui.cart = ui.cart.filter(l => getP(l.pid));
+  if (!ui.cart.length) { el.innerHTML = `<div class="msg"><p>${esc(t('cart_empty'))}</p></div>`; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-cart">
+    <thead><tr><th>${esc(t('col_product'))}</th><th>${esc(t('col_unit'))}</th><th>${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_line'))}</th><th></th></tr></thead>
+    <tbody>${ui.cart.map((l, i) => {
+      const p = getP(l.pid);
+      const over = l.qty > p.qty;
+      return `<tr class="${l.pid === ui.flashPid ? 'row-flash' : ''}">
+        <td class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code>${p.location ? `<span>${esc(p.location)}</span>` : ''}<span class="${over ? 'warn-text' : ''}" data-stock-note="${i}">${esc(over ? t('over_stock', { n: p.qty }) : t('in_stock_n', { n: p.qty }))}</span></span></td>
+        <td><input class="in in-num price-in" type="text" inputmode="decimal" data-on="cart-price" data-i="${i}" value="${esc(fmtNum(l.price).replace(/,/g, ''))}" aria-label="${esc(t('col_unit'))}"></td>
+        <td><div class="stepper"><button type="button" data-action="cart-dec" data-i="${i}" aria-label="−">−</button><input type="text" inputmode="numeric" data-on="cart-qty" data-i="${i}" value="${l.qty}" aria-label="${esc(t('col_qty'))}"><button type="button" data-action="cart-inc" data-i="${i}" aria-label="+">+</button></div></td>
+        <td class="num-col"><b data-line-total="${i}">${moneyH(l.qty * l.price)}</b></td>
+        <td><button type="button" class="icon-btn" data-action="cart-remove" data-i="${i}" aria-label="${esc(t('remove'))}">×</button></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+  ui.flashPid = null;
+}
+function renderSellTotals() {
+  const tot = $('#sell-total'); if (!tot) return;
+  tot.innerHTML = moneyH(sum(ui.cart, l => l.qty * l.price));
+  $('#sell-meta').innerHTML = `<span>${esc(t('items_n', { n: sum(ui.cart, l => l.qty) }))}</span><span>${esc(t('lines_n', { n: ui.cart.length }))}</span>`;
+  $('#sell-complete').disabled = !ui.cart.length;
+  $('#sell-clear').disabled = !ui.cart.length;
+}
+function renderLastSale() {
+  const el = $('#sell-last'); if (!el) return;
+  const s = [...state.sales].reverse().find(x => !x.cancelled);
+  el.innerHTML = s && isToday(s.date)
+    ? `<span>${esc(t('last_sale', { no: s.no, total: money(s.total) }))} · ${esc(fmtTime(s.date))}</span><button type="button" class="link-btn" data-action="cancel-sale" data-id="${esc(s.id)}">${esc(t('undo_sale'))}</button>`
+    : '';
+}
+function addToCart(p) {
+  const i = ui.cart.findIndex(l => l.pid === p.id);
+  if (i >= 0) { const [line] = ui.cart.splice(i, 1); line.qty++; ui.cart.unshift(line); }
+  else ui.cart.unshift({ pid: p.id, qty: 1, price: p.price });
+  ui.sellMsg = null;
+  ui.flashPid = p.id;
+  renderSellMsg(); renderCart(); renderSellTotals();
+}
+function sellEnter(input) {
+  const raw = input.value;
+  const code = normCode(raw);
+  if (!code) return;
+  let p = findByBarcode(code);
+  if (!p) {
+    const m = searchProducts(raw);
+    if (m.length === 1) p = m[0];
+    else if (m.length > 1) { ui.sellMsg = { type: 'pick', ids: m.slice(0, 8).map(x => x.id) }; renderSellMsg(); return; }
+    else { ui.sellMsg = { type: 'notfound', code: looksLikeCode(code) ? code : null, q: raw }; beep(false); renderSellMsg(); input.select(); return; }
+  }
+  beep(true);
+  addToCart(p);
+  input.value = '';
+}
+function completeSale() {
+  const items = [];
+  for (const l of ui.cart) {
+    const p = getP(l.pid);
+    if (!p || l.qty <= 0) continue;
+    items.push({ pid: p.id, name: p.name, barcode: p.barcode, qty: l.qty, price: round2(l.price), cost: round2(p.cost) });
+  }
+  if (!items.length) return;
+  const date = nowISO();
+  const sale = {
+    id: uid(), no: state.settings.nextSaleNo++, date, items,
+    total: round2(sum(items, i => i.qty * i.price)),
+    profit: round2(sum(items, i => i.qty * (i.price - i.cost))),
+    note: ui.sellNote.trim()
+  };
+  for (const i of items) { const p = getP(i.pid); p.qty -= i.qty; p.updatedAt = date; }
+  state.sales.push(sale);
+  ui.cart = []; ui.sellNote = ''; ui.sellMsg = null;
+  const note = $('#sell-note'); if (note) note.value = '';
+  commit();
+  toast(t('sale_done', { no: sale.no, total: money(sale.total) }));
+  focusScan();
+}
+async function cancelSale(id) {
+  const s = state.sales.find(x => x.id === id);
+  if (!s || s.cancelled) return;
+  if (!await confirmBox(t('cancel_confirm', { no: s.no }), { okText: t('cancel_sale'), danger: true })) return;
+  const cur = state.sales.find(x => x.id === id);
+  if (!cur || cur.cancelled) return;
+  cur.cancelled = true;
+  cur.cancelledAt = nowISO();
+  for (const i of cur.items) { const p = getP(i.pid); if (p) p.qty += i.qty; }
+  commit();
+  toast(t('sale_cancelled', { no: cur.no }));
+}
+
+/* ----- Receive stock ----- */
+views.receive = {
+  mount(el) {
+    el.innerHTML = `<div class="pos">
+      <section class="pos-main">
+        <h1 class="h1">${esc(t('recv_title'))}</h1>
+        <p class="sub">${esc(t('recv_intro'))}</p>
+        ${scanBox('recv-scan', t('recv_ph'))}
+        <div id="recv-msg" class="results" aria-live="polite"></div>
+        <div id="recv-list"></div>
+      </section>
+      <aside class="pos-side">
+        <div class="panel">
+          <div class="grand"><span class="grand-label">${esc(t('col_received'))}</span><span class="grand-val" id="recv-total"></span></div>
+          <div class="side-meta" id="recv-meta"></div>
+          <input id="recv-note" class="in" type="text" autocomplete="off" placeholder="${esc(t('recv_note_ph'))}" aria-label="${esc(t('recv_note_ph'))}" value="${esc(ui.recvNote)}">
+          <button type="button" class="btn btn-primary btn-lg btn-block" id="recv-submit" data-action="recv-submit">${esc(t('recv_submit'))}</button>
+        </div>
+        <section class="panel"><h2 class="h2">${esc(t('recv_recent'))}</h2><div id="recv-recent"></div></section>
+      </aside>
+    </div>`;
+    this.refresh();
+    focusScan();
+  },
+  refresh() { renderRecvMsg(); renderRecvList(); renderRecvTotals(); renderRecvRecent(); }
+};
+function renderRecvMsg() {
+  const el = $('#recv-msg'); if (!el) return;
+  const m = ui.recvMsg;
+  if (!m) { el.innerHTML = ''; return; }
+  if (m.type === 'pick') {
+    const ps = m.ids.map(getP).filter(Boolean);
+    el.innerHTML = `<p class="hint">${esc(t('pick_one'))}</p><ul class="hits">${ps.map(p => hitRow(p, 'recv-add')).join('')}</ul>`;
+  } else {
+    el.innerHTML = m.code ? notFoundMsg(m.code, 'recv-new-with-code') : `<div class="msg msg-bad" role="alert"><p>${esc(t('noResults', { q: m.q }))}</p></div>`;
+  }
+}
+function renderRecvList() {
+  const el = $('#recv-list'); if (!el) return;
+  ui.recv = ui.recv.filter(l => getP(l.pid));
+  if (!ui.recv.length) { el.innerHTML = `<div class="msg"><p>${esc(t('recv_empty'))}</p></div>`; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-cart">
+    <thead><tr><th>${esc(t('col_product'))}</th><th class="num-col">${esc(t('col_now'))}</th><th>${esc(t('col_received'))}</th><th>${esc(t('col_cost'))}</th><th></th></tr></thead>
+    <tbody>${ui.recv.map((l, i) => {
+      const p = getP(l.pid);
+      return `<tr class="${l.pid === ui.flashPid ? 'row-flash' : ''}">
+        <td class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code>${p.location ? `<span>${esc(p.location)}</span>` : ''}</span></td>
+        <td class="num-col">${qtyCell(p)}</td>
+        <td><div class="stepper"><button type="button" data-action="recv-dec" data-i="${i}" aria-label="−">−</button><input type="text" inputmode="numeric" data-on="recv-qty" data-i="${i}" value="${l.qty}" aria-label="${esc(t('col_received'))}"><button type="button" data-action="recv-inc" data-i="${i}" aria-label="+">+</button></div></td>
+        <td><input class="in in-num price-in" type="text" inputmode="decimal" data-on="recv-cost" data-i="${i}" value="${esc(String(l.cost))}" aria-label="${esc(t('col_cost'))}"></td>
+        <td><button type="button" class="icon-btn" data-action="recv-remove" data-i="${i}" aria-label="${esc(t('remove'))}">×</button></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+  ui.flashPid = null;
+}
+function renderRecvTotals() {
+  const el = $('#recv-total'); if (!el) return;
+  el.innerHTML = numH(sum(ui.recv, l => l.qty));
+  $('#recv-meta').innerHTML = `<span>${esc(t('lines_n', { n: ui.recv.length }))}</span><span>${esc(t('recv_cost_total', { v: money(sum(ui.recv, l => l.qty * l.cost)) }))}</span>`;
+  $('#recv-submit').disabled = !ui.recv.length;
+}
+function renderRecvRecent() {
+  const el = $('#recv-recent'); if (!el) return;
+  const list = state.stockIns.slice(-6).reverse();
+  el.innerHTML = list.length
+    ? `<ul class="list">${list.map(r => `<li class="hit hit-2" style="cursor:default"><span class="min0"><span class="cell-name">${esc(fmtDateTime(r.date))}</span><span class="cell-sub">${esc(r.note || r.items.map(i => i.name).join('، '))}</span></span><span class="cell-sub">${esc(t('recv_units', { n: sum(r.items, i => i.qty) }))}</span></li>`).join('')}</ul>`
+    : `<p class="empty">${esc(t('recv_recent_empty'))}</p>`;
+}
+function addToRecv(p) {
+  const i = ui.recv.findIndex(l => l.pid === p.id);
+  if (i >= 0) { const [line] = ui.recv.splice(i, 1); line.qty++; ui.recv.unshift(line); }
+  else ui.recv.unshift({ pid: p.id, qty: 1, cost: p.cost });
+  ui.recvMsg = null;
+  ui.flashPid = p.id;
+  renderRecvMsg(); renderRecvList(); renderRecvTotals();
+}
+function recvEnter(input) {
+  const raw = input.value;
+  const code = normCode(raw);
+  if (!code) return;
+  let p = findByBarcode(code);
+  if (!p) {
+    const m = searchProducts(raw);
+    if (m.length === 1) p = m[0];
+    else if (m.length > 1) { ui.recvMsg = { type: 'pick', ids: m.slice(0, 8).map(x => x.id) }; renderRecvMsg(); return; }
+    else if (looksLikeCode(code)) {
+      beep(false); input.value = '';
+      ui.recvMsg = null; renderRecvMsg();
+      openProductDialog(null, { barcode: code, hint: t('pf_recv_hint') });
+      return;
+    } else { ui.recvMsg = { type: 'notfound', code: null, q: raw }; beep(false); renderRecvMsg(); return; }
+  }
+  beep(true);
+  addToRecv(p);
+  input.value = '';
+}
+function submitRecv() {
+  const date = nowISO();
+  const items = [];
+  for (const l of ui.recv) {
+    const p = getP(l.pid);
+    if (!p || l.qty <= 0) continue;
+    p.qty += l.qty;
+    if (Number.isFinite(l.cost) && l.cost >= 0) p.cost = round2(l.cost);
+    p.updatedAt = date;
+    items.push({ pid: p.id, name: p.name, qty: l.qty, cost: p.cost });
+  }
+  if (!items.length) return;
+  state.stockIns.push({ id: uid(), date, items, note: ui.recvNote.trim() });
+  ui.recv = []; ui.recvNote = '';
+  const note = $('#recv-note'); if (note) note.value = '';
+  commit();
+  toast(t('recv_done', { n: sum(items, i => i.qty) }));
+  focusScan();
+}
+
+/* ----- Products ----- */
+views.products = {
+  mount(el) {
+    const f = ui.prod;
+    el.innerHTML = `<div class="stack">
+      <div class="page-head"><h1 class="h1">${esc(t('products_title'))}</h1>
+        <div class="head-actions"><button type="button" class="btn" data-action="export-csv">${esc(t('export_csv'))}</button><button type="button" class="btn btn-primary" data-action="new-product">${esc(t('add_product'))}</button></div></div>
+      <div class="toolbar">
+        ${scanBox('prod-q', t('prod_search_ph'), f.q, 'scanbox-sm')}
+        <select id="prod-cat" class="in" aria-label="${esc(t('pf_category'))}"></select>
+        <select id="prod-stock" class="in" aria-label="${esc(t('col_qty'))}">
+          <option value="">${esc(t('stock_all'))}</option><option value="low">${esc(t('stock_low'))}</option><option value="out">${esc(t('stock_out'))}</option>
+        </select>
+        <select id="prod-sort" class="in" aria-label="sort">
+          <option value="name">${esc(t('sort_name'))}</option><option value="location">${esc(t('sort_location'))}</option><option value="qty">${esc(t('sort_qty'))}</option><option value="new">${esc(t('sort_new'))}</option>
+        </select>
+      </div>
+      <div id="prod-msg" class="results"></div>
+      <div id="prod-list" class="stack" style="gap:8px"></div>
+    </div>`;
+    $('#prod-stock').value = f.stock;
+    $('#prod-sort').value = f.sort;
+    this.refresh();
+  },
+  refresh() {
+    const sel = $('#prod-cat'); if (!sel) return;
+    const cats = uniq(state.products.map(p => p.category));
+    if (ui.prod.cat && !cats.includes(ui.prod.cat)) ui.prod.cat = '';
+    sel.innerHTML = `<option value="">${esc(t('all_categories'))}</option>` + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    sel.value = ui.prod.cat;
+    renderProdMsg();
+    renderProdList();
+  }
+};
+function renderProdMsg() {
+  const el = $('#prod-msg'); if (!el) return;
+  el.innerHTML = ui.prod.msg ? notFoundMsg(ui.prod.msg, 'new-with-code') : '';
+}
+function renderProdList() {
+  const el = $('#prod-list'); if (!el) return;
+  const f = ui.prod;
+  if (!state.products.length) {
+    el.innerHTML = `<div class="msg"><p>${esc(t('products_none'))}</p><button type="button" class="btn" data-action="load-sample">${esc(t('welcome_sample'))}</button></div>`;
+    return;
+  }
+  let list = f.q.trim() ? searchProducts(f.q) : [...state.products];
+  if (f.cat) list = list.filter(p => p.category === f.cat);
+  if (f.stock === 'low') list = list.filter(p => stockState(p) !== 'ok');
+  if (f.stock === 'out') list = list.filter(p => p.qty <= 0);
+  const byName = (a, b) => a.name.localeCompare(b.name, lang);
+  if (f.sort === 'location') list.sort((a, b) => (a.location || '￿').localeCompare(b.location || '￿', lang, { numeric: true }) || byName(a, b));
+  else if (f.sort === 'qty') list.sort((a, b) => a.qty - b.qty || byName(a, b));
+  else if (f.sort === 'new') list.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  else if (!f.q.trim()) list.sort(byName);
+  if (!list.length) { el.innerHTML = `<div class="msg"><p>${esc(t('products_empty'))}</p></div>`; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-products">
+    <thead><tr><th>${esc(t('col_product'))}</th><th>${esc(t('col_barcode'))}</th><th>${esc(t('col_location'))}</th><th class="num-col">${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_price'))}</th></tr></thead>
+    <tbody>${list.map(p => `<tr class="row-link" data-action="edit-product" data-id="${esc(p.id)}">
+      <td class="min0"><button type="button" class="link-btn cell-name" style="text-decoration:none;color:inherit;text-align:start" data-action="edit-product" data-id="${esc(p.id)}">${esc(p.name)}</button><span class="cell-sub">${esc(p.category || t('noCategory'))}</span></td>
+      <td><code>${esc(p.barcode)}</code></td>
+      <td>${locChip(p)}</td>
+      <td class="num-col">${qtyCell(p)}</td>
+      <td class="num-col">${moneyH(p.price)}</td>
+    </tr>`).join('')}</tbody></table></div>
+    <div class="table-foot"><span>${esc(t('foot_shown', { shown: list.length, total: state.products.length }))}</span><span>${esc(t('foot_units', { n: fmtNum(sum(list, p => Math.max(0, p.qty))) }))}</span><span>${esc(t('foot_value', { v: money(sum(list, p => Math.max(0, p.qty) * p.cost)) }))}</span></div>`;
+}
+function prodEnter(input) {
+  const code = normCode(input.value);
+  if (!code) return;
+  const p = findByBarcode(code);
+  if (p) { beep(true); input.select(); openProductDialog(p); return; }
+  if (!searchProducts(input.value).length && looksLikeCode(code)) { beep(false); ui.prod.msg = code; renderProdMsg(); input.select(); }
+}
+function exportCSV() {
+  const cell = v => { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const rows = [t('csv_head').split(',')];
+  [...state.products].sort((a, b) => a.name.localeCompare(b.name, lang)).forEach(p => {
+    rows.push([p.name, p.barcode ? '="' + p.barcode.replace(/"/g, '') + '"' : '', p.category, p.location, p.qty, p.cost, p.price, p.minQty, p.notes]);
+  });
+  download(`products-${ymd(new Date())}.csv`, '﻿' + rows.map(r => r.map(cell).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
+  toast(t('csv_done'));
+}
+
+/* ----- Sales ----- */
+function periodStart(p) {
+  const n = new Date();
+  const d = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  if (p === 'today') return d;
+  if (p === 'week') { d.setDate(d.getDate() - 6); return d; }
+  if (p === 'month') return new Date(n.getFullYear(), n.getMonth(), 1);
+  return new Date(0);
+}
+views.sales = {
+  mount(el) {
+    const start = periodStart(ui.salesPeriod);
+    const inPeriod = state.sales.filter(s => new Date(s.date) >= start);
+    const valid = inPeriod.filter(s => !s.cancelled);
+    const revenue = sum(valid, s => s.total);
+    const unitsSold = sum(valid, s => sum(s.items, i => i.qty));
+    const agg = new Map();
+    for (const s of valid) for (const i of s.items) {
+      const k = i.pid || i.name;
+      const a = agg.get(k) || { name: i.name, qty: 0, rev: 0 };
+      a.qty += i.qty; a.rev += i.qty * i.price; agg.set(k, a);
+    }
+    const best = [...agg.values()].sort((a, b) => b.qty - a.qty || b.rev - a.rev).slice(0, 6);
+    const maxQ = best.length ? best[0].qty : 1;
+    const list = inPeriod.slice().reverse();
+    const shown = list.slice(0, 200);
+    el.innerHTML = `<div class="stack">
+      <div class="page-head"><h1 class="h1">${esc(t('sales_title'))}</h1>
+        <div class="chips" role="group">${['today', 'week', 'month', 'all'].map(p => `<button type="button" class="chip" data-action="period" data-p="${p}" aria-pressed="${ui.salesPeriod === p}">${esc(t('p_' + p))}</button>`).join('')}</div></div>
+      <section class="stats stats-3">
+        ${tile(t('s_count'), numH(valid.length), esc(t('s_countSub', { n: unitsSold })))}
+        ${tile(t('s_revenue'), moneyH(revenue), esc(t('s_revenueSub', { v: money(valid.length ? revenue / valid.length : 0) })))}
+        ${tile(t('s_profit'), moneyH(sum(valid, s => s.profit)), esc(t('s_profitSub')))}
+      </section>
+      <div class="sales-layout">
+        <section class="stack" style="gap:10px">
+          <h2 class="h2">${esc(t('sales_list'))}</h2>
+          ${shown.length ? `<div class="sales-list">${shown.map(saleRow).join('')}</div>` : `<div class="msg"><p>${esc(t('sales_empty'))}</p></div>`}
+        </section>
+        <section class="panel">
+          <h2 class="h2">${esc(t('best_title'))}</h2>
+          ${best.length ? `<ol class="best">${best.map(b => `<li><div class="best-top"><span class="best-name">${esc(b.name)}</span><span class="best-val num">${esc(t('best_line', { n: b.qty, v: money(b.rev) }))}</span></div><div class="bar" aria-hidden="true"><span style="width:${Math.max(4, Math.round(b.qty / maxQ * 100))}%"></span></div></li>`).join('')}</ol>` : `<p class="empty">${esc(t('sales_empty'))}</p>`}
+        </section>
+      </div>
+    </div>`;
+  }
+};
+function saleRow(s) {
+  const when = ui.salesPeriod === 'today' ? fmtTime(s.date) : fmtDateTime(s.date);
+  return `<details class="sale${s.cancelled ? ' is-cancelled' : ''}">
+    <summary>
+      <span class="sale-no">${esc(t('sale_no', { no: s.no }))}</span>
+      <span class="min0"><span class="sale-when"><span>${esc(when)}</span><span>${esc(t('pieces', { n: sum(s.items, i => i.qty) }))}</span>${s.cancelled ? `<span class="pill pill-muted">${esc(t('cancelled'))}</span>` : ''}</span>
+        <span class="cell-sub">${esc(s.items.map(i => i.name).join('، '))}</span></span>
+      <span class="sale-total">${moneyH(s.total)}<span class="sale-profit">${esc(t('s_profit'))}: ${moneyH(s.profit)}</span></span>
+    </summary>
+    <div class="sale-body">
+      <div class="table-wrap"><table class="tbl"><thead><tr><th>${esc(t('col_product'))}</th><th class="num-col">${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_unit'))}</th><th class="num-col">${esc(t('col_line'))}</th></tr></thead>
+      <tbody>${s.items.map(i => `<tr><td>${esc(i.name)}</td><td class="num-col">${i.qty}</td><td class="num-col">${moneyH(i.price)}</td><td class="num-col">${moneyH(i.qty * i.price)}</td></tr>`).join('')}</tbody></table></div>
+      ${s.note ? `<p class="sale-note">${esc(s.note)}</p>` : ''}
+      ${s.cancelled ? '' : `<div><button type="button" class="btn btn-danger btn-sm" data-action="cancel-sale" data-id="${esc(s.id)}">${esc(t('cancel_sale'))}</button></div>`}
+    </div>
+  </details>`;
+}
+
+/* ----- Labels ----- */
+views.labels = {
+  mount(el) {
+    const L = ui.labels;
+    el.innerHTML = `<div class="stack">
+      <div class="stack" style="gap:6px"><h1 class="h1">${esc(t('labels_title'))}</h1><p class="sub">${esc(t('labels_intro'))}</p></div>
+      ${banner('info', t('labels_noprinter'))}
+      <div class="labels-layout">
+        <section class="panel">
+          ${scanBox('lbl-q', t('labels_search_ph'), L.q, 'scanbox-sm')}
+          <div class="lbl-tools">
+            <label class="check"><input type="checkbox" id="lbl-gen"${L.onlyGen ? ' checked' : ''}>${esc(t('labels_only_gen'))}</label>
+            <span class="spacer"></span>
+            <button type="button" class="btn btn-sm" data-action="lbl-all">${esc(t('labels_select_all'))}</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-action="lbl-none">${esc(t('labels_clear'))}</button>
+          </div>
+          <div id="lbl-list" class="lbl-list"></div>
+        </section>
+        <aside class="panel">
+          <h2 class="h2">${esc(t('labels_options'))}</h2>
+          <label class="check"><input type="checkbox" id="lbl-price"${L.showPrice ? ' checked' : ''}>${esc(t('labels_price'))}</label>
+          <div class="field"><label class="field-label" for="lbl-skip">${esc(t('labels_skip'))}</label>
+            <input id="lbl-skip" class="in in-num" type="text" inputmode="numeric" value="${L.skip}" style="max-width:110px"><p class="hint">${esc(t('labels_skip_hint'))}</p></div>
+          <p id="lbl-summary" class="h2"></p>
+          <button type="button" class="btn btn-primary btn-lg btn-block" id="lbl-print" data-action="lbl-print">${esc(t('labels_print'))}</button>
+          <div id="lbl-preview"></div>
+        </aside>
+      </div>
+    </div>`;
+    this.refresh();
+  },
+  refresh() { renderLabelList(); renderLabelSummary(); }
+};
+function labelCandidates() {
+  const L = ui.labels;
+  let list = L.q.trim() ? searchProducts(L.q) : [...state.products].sort((a, b) => a.name.localeCompare(b.name, lang));
+  if (L.onlyGen) list = list.filter(p => p.gen || L.sel.has(p.id));
+  return list;
+}
+const defaultCopies = p => Math.min(200, p.gen ? Math.max(1, p.qty) : 1);
+function renderLabelList() {
+  const el = $('#lbl-list'); if (!el) return;
+  for (const id of ui.labels.sel.keys()) if (!getP(id)) ui.labels.sel.delete(id);
+  const list = labelCandidates();
+  el.innerHTML = list.length ? list.map(p => {
+    const n = ui.labels.sel.get(p.id);
+    return `<div class="lbl-row"><label><input type="checkbox" data-lbl-check="${esc(p.id)}"${n ? ' checked' : ''}>
+      <span class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code><span>${esc(t('in_stock_n', { n: p.qty }))}</span></span></span></label>
+      <input class="in in-num" type="text" inputmode="numeric" data-on="lbl-copies" data-id="${esc(p.id)}" value="${n || ''}" placeholder="0" aria-label="${esc(t('labels_copies'))}"></div>`;
+  }).join('') : `<p class="empty" style="padding:12px">${esc(t('labels_empty'))}</p>`;
+}
+function labelHTML(p, showPrice) {
+  let bc;
+  try { bc = barcodeSVG(p.barcode); } catch (e) { bc = '<div style="height:13mm"></div>'; }
+  return `<div class="label"><div class="label-name" dir="auto">${esc(p.name)}</div>${bc}<div class="label-foot"><span class="label-code">${esc(p.barcode)}</span>${showPrice ? `<span class="label-price">${esc(money(p.price))}</span>` : ''}</div></div>`;
+}
+function buildSheets() {
+  const L = ui.labels;
+  const cells = [];
+  for (let i = 0; i < Math.min(23, Math.max(0, L.skip | 0)); i++) cells.push('<div class="label"></div>');
+  let count = 0;
+  for (const [id, n] of L.sel) {
+    const p = getP(id); if (!p || !n) continue;
+    const html = labelHTML(p, L.showPrice);
+    for (let i = 0; i < n; i++) { cells.push(html); count++; }
+  }
+  const sheets = [];
+  for (let i = 0; i < cells.length; i += 24) sheets.push(`<div class="sheet">${cells.slice(i, i + 24).join('')}</div>`);
+  return { sheets, count };
+}
+function renderLabelSummary() {
+  const el = $('#lbl-summary'); if (!el) return;
+  const { sheets, count } = buildSheets();
+  $('#lbl-print').disabled = !count;
+  if (!count) { el.textContent = ''; $('#lbl-preview').innerHTML = `<p class="empty">${esc(t('labels_none'))}</p>`; return; }
+  el.textContent = t('labels_summary', { n: count, p: sheets.length });
+  $('#lbl-preview').innerHTML = `<p class="hint">${esc(t('labels_preview'))}</p><div class="preview-box"><div class="sheet-zoom">${sheets[0]}</div></div>${sheets.length > 1 ? `<p class="hint">${esc(t('labels_more', { n: sheets.length - 1 }))}</p>` : ''}`;
+  fitPreview();
+}
+// Shrink the A4 preview so the whole sheet fits the panel width
+function fitPreview() {
+  const box = $('#lbl-preview .preview-box'); if (!box) return;
+  const z = Math.max(0.2, Math.min(0.6, (box.clientWidth - 30) / (210 * 96 / 25.4)));
+  $('.sheet-zoom', box).style.zoom = z.toFixed(3);
+}
+window.addEventListener('resize', fitPreview);
+function printLabels() {
+  const { sheets, count } = buildSheets();
+  if (!count) return;
+  $('#print-root').innerHTML = sheets.join('');
+  window.print();
+}
+window.addEventListener('afterprint', () => { $('#print-root').innerHTML = ''; });
+function lblEnter(input) {
+  const code = normCode(input.value);
+  const p = findByBarcode(code);
+  if (!p) return;
+  if (!ui.labels.sel.has(p.id)) ui.labels.sel.set(p.id, defaultCopies(p));
+  beep(true);
+  input.value = ''; ui.labels.q = '';
+  views.labels.refresh();
+}
+
+/* ----- Settings ----- */
+views.settings = {
+  mount(el) {
+    const S = state.settings;
+    el.innerHTML = `<div class="stack">
+      <h1 class="h1">${esc(t('settings_title'))}</h1>
+      <div class="settings-grid">
+        <section class="panel">
+          <h2 class="h2">${esc(t('set_shop'))}</h2>
+          <div class="field"><label class="field-label" for="set-store">${esc(t('set_store'))}</label><input id="set-store" class="in" type="text" value="${esc(S.storeName)}" placeholder="${esc(t('set_store_ph'))}"></div>
+          <div class="grid2">
+            <div class="field"><label class="field-label" for="set-cur">${esc(t('set_currency'))}</label><input id="set-cur" class="in" type="text" value="${esc(S.currency)}"><p class="hint">${esc(t('set_currency_hint'))}</p></div>
+            <div class="field"><label class="field-label" for="set-min">${esc(t('set_min'))}</label><input id="set-min" class="in in-num" type="text" inputmode="numeric" value="${S.lowDefault}"><p class="hint">${esc(t('set_min_hint'))}</p></div>
+          </div>
+          <label class="check"><input type="checkbox" id="set-sound"${S.sound ? ' checked' : ''}>${esc(t('set_sound'))}</label>
+          <div class="field"><span class="field-label">${esc(t('set_lang'))}</span>
+            <div class="seg" role="group"><button type="button" data-action="set-lang" data-lang="ar" aria-pressed="${lang === 'ar'}" lang="ar">العربية</button><button type="button" data-action="set-lang" data-lang="en" aria-pressed="${lang === 'en'}" lang="en">English</button></div></div>
+        </section>
+        <section class="panel">
+          <h2 class="h2">${esc(t('backup_title'))}</h2>
+          <p>${esc(t('backup_text'))}</p>
+          <p id="set-backup-info" class="hint"></p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" data-action="backup">${esc(t('backup_download'))}</button>
+            <label class="btn" for="restore-file" tabindex="0" data-action="restore-pick">${esc(t('backup_restore'))}</label>
+            <input type="file" id="restore-file" accept=".json,application/json" hidden>
+          </div>
+          <h3>${esc(t('data_title'))}</h3>
+          <p id="set-counts" class="hint"></p>
+          <div id="set-sample"></div>
+        </section>
+        <section class="panel">
+          <h2 class="h2">${esc(t('tips_title'))}</h2>
+          <ul class="tips">${['tip1', 'tip2', 'tip3', 'tip4', 'tip5'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul>
+        </section>
+      </div>
+    </div>`;
+    this.refresh();
+  },
+  refresh() {
+    const info = $('#set-backup-info'); if (!info) return;
+    const last = state.settings.lastBackupAt;
+    info.textContent = last ? t('backup_last', { date: fmtDateTime(last) }) : t('backup_none');
+    $('#set-counts').textContent = t('data_counts', { p: state.products.length, s: state.sales.length, r: state.stockIns.length });
+    $('#set-sample').innerHTML = state.products.some(p => p.sample)
+      ? `<button type="button" class="btn btn-danger" data-action="remove-sample">${esc(t('sample_remove'))}</button>`
+      : (state.products.length ? '' : `<button type="button" class="btn" data-action="load-sample">${esc(t('welcome_sample'))}</button>`);
+  }
+};
+function downloadBackup() {
+  const d = new Date();
+  state.settings.lastBackupAt = d.toISOString();
+  const payload = { app: APP_ID, kind: 'backup', version: 1, exportedAt: d.toISOString(), data: state };
+  download(`stock-book-backup-${ymd(d)}-${pad2(d.getHours())}${pad2(d.getMinutes())}.json`, JSON.stringify(payload), 'application/json');
+  commit();
+  toast(t('backup_saved'));
+}
+async function restoreFrom(file) {
+  let obj = null;
+  try { obj = JSON.parse(await file.text()); } catch (e) { obj = null; }
+  if (!obj || obj.app !== APP_ID || !obj.data || !Array.isArray(obj.data.products)) { toast(t('restore_bad'), 'bad'); return; }
+  const ok = await confirmBox(t('restore_confirm', { a: state.products.length, date: obj.exportedAt ? fmtDateTime(obj.exportedAt) : '?', b: obj.data.products.length }), { okText: t('restore_ok'), danger: true });
+  if (!ok) return;
+  const incoming = normalizeState(obj.data);
+  incoming.rev = state.rev;
+  state = incoming;
+  ui.cart = []; ui.recv = []; ui.labels.sel.clear(); ui.homeHit = null;
+  commit();
+  renderAll();
+  toast(t('restored'));
+}
+
+/* ================= Product dialog ================= */
+function openProductDialog(p, opts = {}) {
+  const d = $('#dlg-product');
+  const isNew = !p;
+  const S = state.settings;
+  const v = p || { name: '', barcode: opts.barcode || '', category: opts.category || '', location: opts.location || '', cost: '', price: '', qty: '', minQty: S.lowDefault, notes: '' };
+  const pid = p ? p.id : null;
+  let genValue = null;
+  const cats = uniq(state.products.map(x => x.category));
+  const locs = uniq(state.products.map(x => x.location));
+  const numVal = n => (n === '' || n === null || n === undefined) ? '' : String(n);
+  d.innerHTML = `<form class="dlg-form" id="pf" novalidate>
+    <header class="dlg-head"><h2 class="h2" id="pf-title">${esc(isNew ? t('pf_new') : t('pf_edit'))}</h2><button type="button" class="icon-btn" data-pf="close" aria-label="${esc(t('close'))}">×</button></header>
+    <div class="dlg-body">
+      ${opts.hint ? `<div class="banner" role="note"><span class="banner-ic" aria-hidden="true">i</span><p>${esc(opts.hint)}</p></div>` : ''}
+      <div class="field"><label class="field-label" for="pf-barcode">${esc(t('pf_barcode'))}</label>
+        <div class="inline"><input id="pf-barcode" class="in code" type="text" dir="ltr" autocomplete="off" spellcheck="false" value="${esc(v.barcode)}"><button type="button" class="btn" data-pf="gen">${esc(t('pf_generate'))}</button></div>
+        <p class="hint">${esc(t('pf_barcode_hint'))}</p></div>
+      <div class="field"><label class="field-label" for="pf-name">${esc(t('pf_name'))}</label><input id="pf-name" class="in" type="text" dir="auto" autocomplete="off" value="${esc(v.name)}" placeholder="${esc(t('pf_name_ph'))}"></div>
+      <div class="grid2">
+        <div class="field"><label class="field-label" for="pf-cat">${esc(t('pf_category'))}</label><input id="pf-cat" class="in" type="text" list="dl-cat" autocomplete="off" value="${esc(v.category)}" placeholder="${esc(t('pf_category_ph'))}"></div>
+        <div class="field"><label class="field-label" for="pf-loc">${esc(t('pf_location'))}</label><input id="pf-loc" class="in" type="text" list="dl-loc" autocomplete="off" value="${esc(v.location)}" placeholder="${esc(t('pf_location_ph'))}"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label class="field-label" for="pf-cost">${esc(t('pf_cost'))}</label><input id="pf-cost" class="in in-num" type="text" inputmode="decimal" value="${esc(numVal(v.cost))}" placeholder="0"></div>
+        <div class="field"><label class="field-label" for="pf-price">${esc(t('pf_price'))}</label><input id="pf-price" class="in in-num" type="text" inputmode="decimal" value="${esc(numVal(v.price))}" placeholder="0"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label class="field-label" for="pf-qty">${esc(t('pf_qty'))}</label><input id="pf-qty" class="in in-num" type="text" inputmode="numeric" value="${esc(numVal(v.qty))}" placeholder="0"></div>
+        <div class="field"><label class="field-label" for="pf-min">${esc(t('pf_min'))}</label><input id="pf-min" class="in in-num" type="text" inputmode="numeric" value="${esc(numVal(v.minQty))}"></div>
+      </div>
+      <div class="field"><label class="field-label" for="pf-notes">${esc(t('pf_notes'))}</label><textarea id="pf-notes" class="in" rows="2" placeholder="${esc(t('pf_notes_ph'))}">${esc(v.notes)}</textarea></div>
+      <p class="form-err" id="pf-err" role="alert"></p>
+      <datalist id="dl-cat">${cats.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+      <datalist id="dl-loc">${locs.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+    </div>
+    <footer class="dlg-foot">
+      ${isNew ? '' : `<button type="button" class="btn btn-danger" data-pf="delete">${esc(t('pf_delete'))}</button>`}
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-ghost" data-pf="close">${esc(t('cancel'))}</button>
+      ${isNew && !opts.onSaved ? `<button type="button" class="btn" data-pf="save-next">${esc(t('pf_save_next'))}</button>` : ''}
+      <button type="button" class="btn btn-primary" data-pf="save">${esc(t('save'))}</button>
+    </footer>
+  </form>`;
+  const form = $('#pf', d);
+  const err = $('#pf-err', d);
+  const showErr = (msg, field, extra = '') => {
+    $$('.in', d).forEach(i => i.classList.remove('invalid'));
+    err.innerHTML = esc(msg) + extra;
+    if (field) { field.classList.add('invalid'); field.focus(); }
+  };
+  const checkBarcode = () => {
+    const f = $('#pf-barcode', d);
+    const code = normCode(f.value);
+    f.value = code;
+    if (!code) return true;
+    if (!/^[\x21-\x7e]+$/.test(code)) { showErr(t('err_code'), f); return false; }
+    const other = findByBarcode(code);
+    if (other && other.id !== pid) {
+      showErr(t('err_dup', { name: other.name }), f, ` <button type="button" class="btn btn-sm" data-pf="open-other" data-id="${esc(other.id)}">${esc(t('open_it'))}</button>`);
+      return false;
+    }
+    return true;
+  };
+  const save = (andNext) => {
+    const name = $('#pf-name', d).value.trim();
+    if (!checkBarcode()) return;
+    if (!name) { showErr(t('err_name'), $('#pf-name', d)); return; }
+    const nums = {};
+    for (const [key, id, int] of [['cost', 'pf-cost', false], ['price', 'pf-price', false], ['qty', 'pf-qty', true], ['minQty', 'pf-min', true]]) {
+      const f = $('#' + id, d);
+      const n = parseNum(f.value);
+      if (Number.isNaN(n) || (n !== null && key !== 'qty' && n < 0)) { showErr(t('err_num'), f); return; }
+      nums[key] = n === null ? 0 : (int ? Math.round(n) : round2(n));
+    }
+    let code = normCode($('#pf-barcode', d).value);
+    let gen = false;
+    if (!code) { code = nextGenCode(); gen = true; }
+    else if (code === genValue) gen = true;
+    const now = nowISO();
+    let target = pid ? getP(pid) : null;
+    if (target && target.barcode === code && target.gen) gen = true;
+    const fields = {
+      name, barcode: code, gen,
+      category: $('#pf-cat', d).value.trim(), location: $('#pf-loc', d).value.trim(),
+      cost: nums.cost, price: nums.price, qty: nums.qty, minQty: nums.minQty,
+      notes: $('#pf-notes', d).value.trim(), updatedAt: now
+    };
+    if (target) Object.assign(target, fields);
+    else { target = { id: uid(), createdAt: now, sample: false, ...fields }; state.products.push(target); }
+    if (gen && /^20\d{6}$/.test(code)) state.settings.nextCode = Math.max(state.settings.nextCode || 1, Number(code.slice(2)) + 1);
+    commit();
+    toast(t('saved', { name }));
+    if (andNext) { openProductDialog(null, { category: fields.category, location: fields.location }); return; }
+    d.close();
+    if (opts.onSaved) opts.onSaved(target);
+  };
+  d.onclick = async e => {
+    const b = e.target.closest('[data-pf]'); if (!b) return;
+    const act = b.dataset.pf;
+    if (act === 'close') d.close();
+    else if (act === 'gen') { genValue = nextGenCode(); $('#pf-barcode', d).value = genValue; err.textContent = ''; $('#pf-name', d).focus(); }
+    else if (act === 'save') save(false);
+    else if (act === 'save-next') save(true);
+    else if (act === 'open-other') { const o = getP(b.dataset.id); if (o) openProductDialog(o); }
+    else if (act === 'delete') {
+      const cur = getP(pid); if (!cur) { d.close(); return; }
+      if (!await confirmBox(t('del_confirm', { name: cur.name }), { okText: t('pf_delete'), danger: true })) return;
+      state.products = state.products.filter(x => x.id !== pid);
+      ui.cart = ui.cart.filter(l => l.pid !== pid);
+      ui.recv = ui.recv.filter(l => l.pid !== pid);
+      ui.labels.sel.delete(pid);
+      if (ui.homeHit && ui.homeHit.id === pid) ui.homeHit = null;
+      d.close();
+      commit();
+      toast(t('deleted'));
+    }
+  };
+  form.addEventListener('submit', e => e.preventDefault());
+  form.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.isComposing) return;
+    if (e.target.tagName === 'TEXTAREA' && !e.ctrlKey) return;
+    if (e.target.tagName === 'BUTTON') return;
+    e.preventDefault();
+    if (e.ctrlKey) { save(false); return; }
+    if (e.target.id === 'pf-barcode' && !checkBarcode()) return;
+    if (e.target.id === 'pf-barcode') err.textContent = '';
+    const fields = $$('input.in, textarea.in', d);
+    const i = fields.indexOf(e.target);
+    if (i >= 0 && i < fields.length - 1) fields[i + 1].focus();
+  });
+  if (!d.open) d.showModal();
+  const first = isNew && !v.barcode ? $('#pf-barcode', d) : $('#pf-name', d);
+  first.focus();
+  if (!isNew) first.select();
+}
+$('#dlg-product').addEventListener('close', () => setTimeout(focusScan, 0));
+
+/* ================= Sample data ================= */
+function loadSample() {
+  const rows = [
+    ['ماوس Logitech M185 لاسلكي', 'ماوس', 'رف A1', 9, 14, 12, 3],
+    ['ماوس ألعاب Redragon M711', 'ماوس', 'رف A1', 12, 19, 3, 3],
+    ['كيبورد Logitech K120 سلكي', 'كيبورد', 'رف A2', 8, 13, 15, 3],
+    ['كيبورد ميكانيكي Redragon K552', 'كيبورد', 'رف A2', 28, 39, 2, 2],
+    ['سماعة رأس HyperX Cloud Stinger', 'سماعات', 'رف B1', 30, 45, 0, 2],
+    ['كيبل HDMI طول 1.5 متر', 'كيبلات', 'درج C3', 1.5, 4, 40, 10],
+    ['فلاشة SanDisk سعة 64GB', 'تخزين', 'الواجهة الزجاجية', 5, 8, 25, 5],
+    ['قارئ بطاقات USB', 'إكسسوارات', 'درج C1', 2, 5, 9, 3],
+    ['لوحة ماوس كبيرة 80×30 سم', 'إكسسوارات', 'رف A3', 3, 7, 18, 4],
+    ['كاميرا ويب Logitech C270', 'كاميرات', 'رف B2', 18, 27, 3, 2],
+    ['موزع USB بأربعة منافذ', 'إكسسوارات', 'درج C1', 3, 7, 7, 3],
+    ['شاحن لابتوب عام 90W', 'شواحن', 'المخزن الخلفي', 9, 16, 6, 2]
+  ];
+  const now = Date.now();
+  const made = rows.map(([name, category, location, cost, price, qty, minQty], i) => {
+    const code = nextGenCode();
+    state.settings.nextCode = Number(code.slice(2)) + 1;
+    const p = { id: uid() + i, name, barcode: code, gen: true, category, location, cost, price, qty, minQty, notes: '', sample: true, createdAt: new Date(now - (rows.length - i) * 6e4).toISOString(), updatedAt: null };
+    state.products.push(p);
+    return p;
+  });
+  const mkSale = (daysAgo, h, m, lines) => {
+    const d = new Date(); d.setDate(d.getDate() - daysAgo); d.setHours(h, m, 0, 0);
+    if (d.getTime() > now) d.setTime(now - 5 * 6e4);
+    const items = lines.map(([idx, qty]) => { const p = made[idx]; return { pid: p.id, name: p.name, barcode: p.barcode, qty, price: p.price, cost: p.cost }; });
+    state.sales.push({ id: uid(), no: state.settings.nextSaleNo++, date: d.toISOString(), items, total: round2(sum(items, x => x.qty * x.price)), profit: round2(sum(items, x => x.qty * (x.price - x.cost))), note: '', sample: true });
+  };
+  mkSale(4, 11, 20, [[0, 1], [5, 2]]);
+  mkSale(3, 17, 5, [[2, 1]]);
+  mkSale(2, 12, 40, [[6, 3]]);
+  mkSale(1, 16, 15, [[3, 1], [8, 1]]);
+  mkSale(1, 19, 30, [[9, 1]]);
+  mkSale(0, 10, 5, [[0, 2], [7, 1]]);
+  mkSale(0, 11, 45, [[5, 3]]);
+  mkSale(0, 13, 10, [[1, 1], [8, 1]]);
+  state.sales.sort((a, b) => a.date.localeCompare(b.date));
+  state.sales.forEach((s, i) => { s.no = i + 1; });
+  state.settings.nextSaleNo = state.sales.length + 1;
+  commit();
+  toast(t('sample_loaded'));
+}
+async function removeSample() {
+  if (!await confirmBox(t('sample_confirm'), { okText: t('sample_remove'), danger: true })) return;
+  const ids = new Set(state.products.filter(p => p.sample).map(p => p.id));
+  const touches = r => r.sample || r.items.some(i => ids.has(i.pid));
+  state.products = state.products.filter(p => !p.sample);
+  state.sales = state.sales.filter(s => !touches(s));
+  state.stockIns = state.stockIns.filter(s => !touches(s));
+  if (!state.sales.length) state.settings.nextSaleNo = 1;
+  if (!state.products.length) state.settings.nextCode = 1;
+  ui.cart = ui.cart.filter(l => !ids.has(l.pid));
+  ui.recv = ui.recv.filter(l => !ids.has(l.pid));
+  for (const id of ids) ui.labels.sel.delete(id);
+  ui.homeHit = null; ui.homeQuery = '';
+  commit();
+  if (ui.view === 'home') mountView();
+  toast(t('sample_removed'));
+}
+
+/* ================= Events ================= */
+const actions = {
+  'toggle-lang': () => setLang(lang === 'ar' ? 'en' : 'ar'),
+  'set-lang': b => setLang(b.dataset.lang),
+  'new-product': () => openProductDialog(null),
+  'new-with-code': b => openProductDialog(null, { barcode: b.dataset.code, onSaved: p => { ui.homeHit = { type: 'product', id: p.id }; ui.prod.msg = null; refreshUI(); } }),
+  'sell-new-with-code': b => openProductDialog(null, { barcode: b.dataset.code, onSaved: p => { ui.sellMsg = null; if (ui.view === 'sell') addToCart(p); } }),
+  'recv-new-with-code': b => openProductDialog(null, { barcode: b.dataset.code, hint: t('pf_recv_hint') }),
+  'edit-product': b => { const p = getP(b.dataset.id); if (p) openProductDialog(p); },
+  'show-product': b => { ui.homeHit = { type: 'product', id: b.dataset.id }; if (ui.view !== 'home') go('home'); else { renderHomeResults(); window.scrollTo({ top: 0 }); } },
+  'sell-product': b => { const p = getP(b.dataset.id); if (!p) return; go('sell'); addToCart(p); },
+  'receive-product': b => { const p = getP(b.dataset.id); if (!p) return; go('receive'); addToRecv(p); },
+  'show-low': () => { ui.prod = { ...ui.prod, q: '', cat: '', stock: 'low', sort: 'qty', msg: null }; go('products'); },
+  'goto-sales': () => { ui.salesPeriod = 'today'; go('sales'); },
+  'load-sample': loadSample,
+  'remove-sample': removeSample,
+  'backup': downloadBackup,
+  'restore-pick': () => {},
+  'export-csv': exportCSV,
+  'cart-add': b => { const p = getP(b.dataset.id); if (p) { addToCart(p); const s = $('#sell-scan'); if (s) { s.value = ''; s.focus(); } } },
+  'cart-inc': b => { const l = ui.cart[+b.dataset.i]; if (l) { l.qty++; renderCart(); renderSellTotals(); } },
+  'cart-dec': b => { const l = ui.cart[+b.dataset.i]; if (l) { l.qty = Math.max(1, l.qty - 1); renderCart(); renderSellTotals(); } },
+  'cart-remove': b => { ui.cart.splice(+b.dataset.i, 1); renderCart(); renderSellTotals(); focusScan(); },
+  'clear-cart': () => { ui.cart = []; ui.sellMsg = null; renderSellMsg(); renderCart(); renderSellTotals(); focusScan(); },
+  'complete-sale': completeSale,
+  'cancel-sale': b => cancelSale(b.dataset.id),
+  'recv-add': b => { const p = getP(b.dataset.id); if (p) { addToRecv(p); const s = $('#recv-scan'); if (s) { s.value = ''; s.focus(); } } },
+  'recv-inc': b => { const l = ui.recv[+b.dataset.i]; if (l) { l.qty++; renderRecvList(); renderRecvTotals(); } },
+  'recv-dec': b => { const l = ui.recv[+b.dataset.i]; if (l) { l.qty = Math.max(1, l.qty - 1); renderRecvList(); renderRecvTotals(); } },
+  'recv-remove': b => { ui.recv.splice(+b.dataset.i, 1); renderRecvList(); renderRecvTotals(); focusScan(); },
+  'recv-submit': submitRecv,
+  'period': b => { ui.salesPeriod = b.dataset.p; mountView(); },
+  'lbl-all': () => { labelCandidates().forEach(p => { if (!ui.labels.sel.has(p.id)) ui.labels.sel.set(p.id, defaultCopies(p)); }); views.labels.refresh(); },
+  'lbl-none': () => { ui.labels.sel.clear(); views.labels.refresh(); },
+  'lbl-print': printLabels
+};
+function setLang(l) {
+  if (l !== 'ar' && l !== 'en') return;
+  state.settings.lang = l;
+  state.rev++; queueSave();
+  renderAll();
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-action]');
+  if (!a || !$('#app').contains(a)) return;
+  const fn = actions[a.dataset.action];
+  if (!fn) return;
+  if (a.tagName !== 'LABEL') e.preventDefault();
+  fn(a, e);
+});
+document.addEventListener('keydown', e => {
+  const el = e.target;
+  if (e.key === 'Enter' && !e.isComposing && el.id) {
+    const map = { 'home-q': homeEnter, 'sell-scan': sellEnter, 'recv-scan': recvEnter, 'prod-q': prodEnter, 'lbl-q': lblEnter };
+    if (map[el.id]) { e.preventDefault(); map[el.id](el); return; }
+  }
+  if (e.key === 'Enter' && el.matches && el.matches('label[data-action="restore-pick"]')) { $('#restore-file').click(); return; }
+  // A barcode scanner types like a keyboard: send stray keystrokes to the page's scan box
+  if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1 || e.key === ' ') return;
+  if (document.querySelector('dialog[open]')) return;
+  if (el && el.matches && el.matches('input, textarea, select, [contenteditable="true"]')) return;
+  const scan = $('#view .scan-input');
+  if (!scan) return;
+  scan.value = '';
+  scan.focus();
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  const on = el.dataset ? el.dataset.on : null;
+  if (el.id === 'home-q') { ui.homeQuery = el.value; ui.homeHit = null; renderHomeResults(); return; }
+  if (el.id === 'sell-scan' || el.id === 'recv-scan') {
+    const q = el.value.trim();
+    const key = el.id === 'sell-scan' ? 'sellMsg' : 'recvMsg';
+    if (q.length >= 2 && /[^\d\s]/.test(normDigits(q))) {
+      const m = searchProducts(q);
+      ui[key] = m.length ? { type: 'pick', ids: m.slice(0, 8).map(x => x.id) } : null;
+    } else ui[key] = null;
+    if (key === 'sellMsg') renderSellMsg(); else renderRecvMsg();
+    return;
+  }
+  if (el.id === 'sell-note') { ui.sellNote = el.value; return; }
+  if (el.id === 'recv-note') { ui.recvNote = el.value; return; }
+  if (el.id === 'prod-q') { ui.prod.q = el.value; ui.prod.msg = null; renderProdMsg(); renderProdList(); return; }
+  if (el.id === 'lbl-q') { ui.labels.q = el.value; renderLabelList(); return; }
+  if (el.id === 'lbl-skip') { const n = parseNum(el.value); ui.labels.skip = Number.isFinite(n) ? Math.max(0, Math.min(23, Math.round(n))) : 0; renderLabelSummary(); return; }
+  if (on === 'cart-price' || on === 'cart-qty') {
+    const i = +el.dataset.i; const l = ui.cart[i]; if (!l) return;
+    const n = parseNum(el.value);
+    if (n === null || Number.isNaN(n) || n < 0) return;
+    if (on === 'cart-price') l.price = round2(n);
+    else { if (n < 1) return; l.qty = Math.round(n); const p = getP(l.pid); const note = $(`[data-stock-note="${i}"]`); if (p && note) { const over = l.qty > p.qty; note.className = over ? 'warn-text' : ''; note.textContent = over ? t('over_stock', { n: p.qty }) : t('in_stock_n', { n: p.qty }); } }
+    const cell = $(`[data-line-total="${i}"]`); if (cell) cell.innerHTML = moneyH(l.qty * l.price);
+    renderSellTotals();
+    return;
+  }
+  if (on === 'recv-qty' || on === 'recv-cost') {
+    const l = ui.recv[+el.dataset.i]; if (!l) return;
+    const n = parseNum(el.value);
+    if (n === null || Number.isNaN(n) || n < 0) return;
+    if (on === 'recv-qty') { if (n < 1) return; l.qty = Math.round(n); } else l.cost = round2(n);
+    renderRecvTotals();
+    return;
+  }
+  if (on === 'lbl-copies') {
+    const id = el.dataset.id; const n = parseNum(el.value);
+    const c = Number.isFinite(n) ? Math.max(0, Math.min(500, Math.round(n))) : 0;
+    if (c > 0) ui.labels.sel.set(id, c); else ui.labels.sel.delete(id);
+    const box = $(`[data-lbl-check="${CSS.escape(id)}"]`); if (box) box.checked = c > 0;
+    renderLabelSummary();
+  }
+});
+document.addEventListener('change', async e => {
+  const el = e.target;
+  if (el.dataset && (el.dataset.on === 'cart-price' || el.dataset.on === 'cart-qty')) { renderCart(); renderSellTotals(); return; }
+  if (el.dataset && (el.dataset.on === 'recv-qty' || el.dataset.on === 'recv-cost')) { renderRecvList(); renderRecvTotals(); return; }
+  if (el.dataset && el.dataset.lblCheck) {
+    const p = getP(el.dataset.lblCheck); if (!p) return;
+    if (el.checked) ui.labels.sel.set(p.id, defaultCopies(p)); else ui.labels.sel.delete(p.id);
+    const copies = $(`[data-on="lbl-copies"][data-id="${CSS.escape(p.id)}"]`); if (copies) copies.value = ui.labels.sel.get(p.id) || '';
+    renderLabelSummary();
+    return;
+  }
+  switch (el.id) {
+    case 'prod-cat': ui.prod.cat = el.value; renderProdList(); break;
+    case 'prod-stock': ui.prod.stock = el.value; renderProdList(); break;
+    case 'prod-sort': ui.prod.sort = el.value; renderProdList(); break;
+    case 'lbl-gen': ui.labels.onlyGen = el.checked; renderLabelList(); break;
+    case 'lbl-price': ui.labels.showPrice = el.checked; renderLabelSummary(); break;
+    case 'set-store': state.settings.storeName = el.value.trim(); commit(); renderHeader(); break;
+    case 'set-cur': state.settings.currency = el.value.trim(); commit(); break;
+    case 'set-min': { const n = parseNum(el.value); state.settings.lowDefault = Number.isFinite(n) && n >= 0 ? Math.round(n) : 2; el.value = state.settings.lowDefault; commit(); break; }
+    case 'set-sound': state.settings.sound = el.checked; commit(); if (el.checked) beep(true); break;
+    case 'restore-file': if (el.files && el.files[0]) await restoreFrom(el.files[0]); el.value = ''; break;
+  }
+});
+window.addEventListener('hashchange', () => {
+  const v = location.hash.slice(1);
+  ui.view = NAV.includes(v) ? v : 'home';
+  mountView();
+  window.scrollTo({ top: 0 });
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden) saveChain = saveChain.then(syncFromStorage).catch(() => {}); });
+window.addEventListener('focus', () => { saveChain = saveChain.then(syncFromStorage).catch(() => {}); });
+window.addEventListener('beforeunload', e => {
+  if (ui.cart.length || ui.recv.length) { e.preventDefault(); e.returnValue = ''; }
+});
+
+/* ================= Start ================= */
+async function init() {
+  try { db = await openDB(); storageMode = 'idb'; }
+  catch (e) {
+    try { localStorage.setItem('__sb', '1'); localStorage.removeItem('__sb'); storageMode = 'local'; }
+    catch (e2) { storageMode = 'memory'; }
+  }
+  let stored = null;
+  try { stored = await loadStored(); } catch (e) { console.error(e); }
+  state = normalizeState(stored);
+  lastSavedRev = stored ? state.rev : 0;
+  if (!stored) state.rev = 0;
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) { /* optional */ }
+  const v = location.hash.slice(1);
+  ui.view = NAV.includes(v) ? v : 'home';
+  renderAll();
+}
+init();
+</script>
+</body>
+</html>
