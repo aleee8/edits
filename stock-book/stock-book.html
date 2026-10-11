@@ -358,6 +358,34 @@ button.tile:hover { border-color: var(--accent); }
   #print-root { display: block !important; }
 }
 
+/* ---------- stock count, activity, shortcuts ---------- */
+.count-place { max-width: 320px; }
+kbd { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 0 5px; border: 1px solid currentColor; border-radius: 4px; opacity: .7; line-height: 1.5; }
+.act-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; }
+.act-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 12px; font-size: 13.5px; }
+.act-list li + li { border-top: 1px solid var(--line); }
+.act-list .cell-sub { display: inline; }
+.delta-up { color: var(--ok); }
+.delta-down { color: var(--bad); }
+
+/* ---------- tables become cards on phones ---------- */
+@media (max-width: 640px) {
+  .tbl-cards { min-width: 0; }
+  .tbl-cards thead { display: none; }
+  .tbl-cards tbody { display: block; }
+  .tbl-cards tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 14px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .tbl-cards tbody tr:last-child { border-bottom: 0; }
+  .tbl-cards td, .tbl-cards tbody tr:last-child td { display: block; padding: 0; border: 0; text-align: start; }
+  .tbl-cards td:first-child { grid-column: 1 / -1; }
+  .tbl-cards td[data-label]::before { content: attr(data-label); display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); margin-bottom: 2px; }
+  .tbl-cards .num-col { text-align: start; }
+  .tbl-cards .cell-end { justify-self: end; align-self: end; }
+  .tbl-cards .row-flash td { animation: none; }
+  .tbl-cards tr.row-flash { animation: flash 1.2s ease-out; }
+}
+/* No physical keyboard on touch screens, so hide the shortcut hints */
+@media (hover: none) { kbd { display: none; } }
+
 /* ---------- settings ---------- */
 .settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 860px) { .settings-grid { grid-template-columns: minmax(0, 1fr); } }
@@ -376,7 +404,7 @@ dialog::backdrop { background: var(--scrim); }
 .spacer { flex: 1; }
 .form-err { color: var(--bad); font-weight: 600; margin: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .form-err:empty { display: none; }
-.confirm-msg { margin: 0; font-size: 16px; }
+.confirm-msg { margin: 0; font-size: 16px; white-space: pre-line; }
 #toasts { position: fixed; inset-inline: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; z-index: 100; padding-inline: 16px; }
 .toast { background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-weight: 600; box-shadow: var(--shadow); max-width: 560px; transition: opacity .3s, transform .3s; }
 .toast-bad { background: var(--bad); color: var(--on-bad); }
@@ -404,6 +432,49 @@ const STR = {
     nav_home: 'الرئيسية', nav_sell: 'بيع', nav_products: 'المنتجات', nav_receive: 'استلام بضاعة',
     nav_sales: 'المبيعات', nav_labels: 'الملصقات', nav_settings: 'الإعدادات',
     langSwitch: 'English',
+    nav_count: 'جرد',
+    count_title: 'جرد المخزون',
+    count_intro: 'امسح كل قطعة موجودة على الرف، وكل مسحة تضيف 1 إلى العدد. عند الانتهاء اضغط "اعتماد الجرد" لتصحيح الكميات في البرنامج.',
+    count_ph: 'امسح كل قطعة على الرف',
+    count_place: 'المكان الذي تجرده',
+    count_all_places: 'كل المحل',
+    count_empty: 'ابدأ بمسح القطع. يمكنك إغلاق البرنامج والعودة لاحقاً، فالجرد يبقى محفوظاً.',
+    col_system: 'في البرنامج', col_counted: 'العدد الفعلي', col_diff: 'الفرق',
+    count_match: 'مطابق', count_more: 'زيادة {n}', count_less: 'نقص {n}',
+    count_missing_title: 'لم تُمسح بعد في هذا المكان',
+    count_missing_hint: 'هذه المنتجات مسجّلة في هذا المكان ولم تمسحها بعد. إذا لم تجدها على الرف اضغط "غير موجود".',
+    count_zero: 'غير موجود',
+    count_apply: 'اعتماد الجرد', count_discard: 'إلغاء الجرد',
+    count_total: 'القطع المعدودة',
+    count_lines: 'المنتجات: {n}', count_diffs: 'فيها فرق: {n}',
+    count_apply_confirm: 'تعديل الكميات في البرنامج لتطابق العدد الفعلي؟ المنتجات التي ستتغير: {n}',
+    count_discard_confirm: 'إلغاء هذا الجرد؟ سيُمسح العدد الحالي ولن تتغير أي كمية.',
+    count_done: 'تم اعتماد الجرد. المنتجات المعدّلة: {n}',
+    count_nochange: 'تم اعتماد الجرد. كل الكميات كانت صحيحة.',
+    count_recent: 'آخر عمليات الجرد', count_recent_empty: 'لا توجد عمليات جرد بعد.',
+    count_changed: 'المعدّلة: {n} من {c}',
+    pf_count_hint: 'منتج جديد: اكتب العدد الموجود فعلاً في خانة "الكمية الموجودة".',
+    import_csv: 'استيراد من Excel',
+    import_hint: 'لإدخال منتجات كثيرة دفعة واحدة: اضغط "تصدير إلى Excel" لتحصل على ملف بالأعمدة الصحيحة، املأه في Excel واحفظه بصيغة CSV، ثم اضغط "استيراد من Excel".',
+    import_bad: 'لم أستطع قراءة الملف. احفظه من Excel بصيغة CSV، بنفس أعمدة ملف التصدير.',
+    import_none: 'لا توجد منتجات صالحة في الملف. تأكد أن عمود الاسم فيه أسماء.',
+    import_confirm: 'من ملف Excel: منتجات جديدة: {a} · منتجات موجودة ستُحدَّث: {u} · صفوف متجاهلة: {s}. هل تريد المتابعة؟',
+    import_sci: 'تنبيه: الباركود تالف في صفوف عددها {n}، لأن Excel حوّله إلى رقم مثل 6.28E+12. اجعل عمود الباركود من نوع "نص" (Text) في Excel ثم أعد الحفظ. هذه الصفوف لن تُستورد.',
+    import_ok: 'استيراد',
+    import_done: 'تم الاستيراد. الجديدة: {a} · المحدّثة: {u}',
+    act_title: 'آخر الحركات', act_none: 'لا توجد حركات لهذا المنتج بعد.',
+    act_sale: 'بيع رقم {no}', act_sale_cancelled: 'بيع رقم {no} (ملغى)', act_recv: 'استلام بضاعة',
+    act_count: 'جرد: من {a} إلى {b}', act_return: 'مرتجع من البيع رقم {no}',
+    pf_label: 'طباعة ملصق',
+    copy_receipt: 'نسخ الفاتورة', receipt_copied: 'تم نسخ الفاتورة. الصقها في واتساب أو في أي رسالة.',
+    receipt_title: 'فاتورة رقم {no}', receipt_thanks: 'شكراً لزيارتكم',
+    copy_failed: 'لم يتم النسخ. حدّد النص وانسخه يدوياً.',
+    copy_order: 'نسخ قائمة الطلب', order_copied: 'تم نسخ قائمة الطلب. أرسلها إلى المورّد.',
+    order_title: 'قائمة طلب بضاعة', order_line: '{name}: الموجود {n}',
+    export_sales: 'تصدير إلى Excel',
+    sales_csv_head: 'رقم البيع,التاريخ,الوقت,المنتج,الباركود,الكمية,السعر,المجموع,سعر الشراء,الربح,الحالة',
+    status_ok: 'مكتمل', status_cancelled: 'ملغى',
+    sales_csv_done: 'تم تنزيل ملف المبيعات في مجلد التنزيلات (Downloads)',
     save: 'حفظ', cancel: 'إلغاء', close: 'إغلاق', edit: 'تعديل', sell: 'بيع', receive: 'استلام', remove: 'إزالة',
     where: 'مكانه في المحل', qty: 'الكمية', price: 'السعر',
     noLocation: 'بدون مكان', noCategory: 'بدون فئة',
@@ -551,6 +622,49 @@ const STR = {
     nav_home: 'Home', nav_sell: 'Sell', nav_products: 'Products', nav_receive: 'Receive stock',
     nav_sales: 'Sales', nav_labels: 'Labels', nav_settings: 'Settings',
     langSwitch: 'العربية',
+    nav_count: 'Stock count',
+    count_title: 'Stock count',
+    count_intro: 'Scan every item on the shelf; each scan adds 1 to the count. When you finish, press "Apply count" to correct the quantities in the app.',
+    count_ph: 'Scan each item on the shelf',
+    count_place: 'Place you are counting',
+    count_all_places: 'Whole store',
+    count_empty: 'Start scanning items. You can close the app and come back later; the count stays saved.',
+    col_system: 'In the app', col_counted: 'Counted', col_diff: 'Difference',
+    count_match: 'Matches', count_more: '{n} extra', count_less: '{n} missing',
+    count_missing_title: 'Not scanned yet in this place',
+    count_missing_hint: 'These products are recorded in this place but you have not scanned them yet. If one is not on the shelf, press "Not here".',
+    count_zero: 'Not here',
+    count_apply: 'Apply count', count_discard: 'Discard count',
+    count_total: 'Items counted',
+    count_lines: 'Products: {n}', count_diffs: 'With a difference: {n}',
+    count_apply_confirm: 'Change the quantities in the app to match what you counted? Products that will change: {n}',
+    count_discard_confirm: 'Discard this count? The counted numbers are cleared and no quantity changes.',
+    count_done: 'Count applied. Products corrected: {n}',
+    count_nochange: 'Count applied. Every quantity was already right.',
+    count_recent: 'Recent counts', count_recent_empty: 'No stock counts yet.',
+    count_changed: 'Corrected: {n} of {c}',
+    pf_count_hint: 'New product: enter the number you actually counted in "Quantity on hand".',
+    import_csv: 'Import from Excel',
+    import_hint: 'To add many products at once: press "Export to Excel" to get a file with the right columns, fill it in Excel and save it as CSV, then press "Import from Excel".',
+    import_bad: "Couldn't read the file. Save it from Excel as CSV, with the same columns as the export file.",
+    import_none: 'No usable products in the file. Check that the name column has names in it.',
+    import_confirm: 'From the Excel file: new products: {a} · existing products to update: {u} · rows skipped: {s}. Continue?',
+    import_sci: 'Warning: the barcode is damaged in {n} rows because Excel turned it into a number like 6.28E+12. Format the barcode column as Text in Excel and save again. These rows will not be imported.',
+    import_ok: 'Import',
+    import_done: 'Import finished. New: {a} · Updated: {u}',
+    act_title: 'Recent activity', act_none: 'No activity for this product yet.',
+    act_sale: 'Sale #{no}', act_sale_cancelled: 'Sale #{no} (cancelled)', act_recv: 'Delivery received',
+    act_count: 'Stock count: {a} → {b}', act_return: 'Returned from sale #{no}',
+    pf_label: 'Print label',
+    copy_receipt: 'Copy receipt', receipt_copied: 'Receipt copied. Paste it into WhatsApp or any message.',
+    receipt_title: 'Receipt #{no}', receipt_thanks: 'Thank you for your visit',
+    copy_failed: "Couldn't copy. Select the text and copy it yourself.",
+    copy_order: 'Copy order list', order_copied: 'Order list copied. Send it to your supplier.',
+    order_title: 'Stock order list', order_line: '{name}: {n} left',
+    export_sales: 'Export to Excel',
+    sales_csv_head: 'Sale no,Date,Time,Product,Barcode,Qty,Price,Line total,Cost price,Profit,Status',
+    status_ok: 'Completed', status_cancelled: 'Cancelled',
+    sales_csv_done: 'The sales file was saved to your Downloads folder',
     save: 'Save', cancel: 'Cancel', close: 'Close', edit: 'Edit', sell: 'Sell', receive: 'Receive', remove: 'Remove',
     where: 'Where it is', qty: 'In stock', price: 'Price',
     noLocation: 'No location', noCategory: 'No category',
@@ -705,7 +819,7 @@ function t(key, vars) {
 /* ================= Helpers ================= */
 const APP_ID = 'stock-book';
 const DB_NAME = 'stock-book-db';
-const NAV = ['home', 'sell', 'products', 'receive', 'sales', 'labels', 'settings'];
+const NAV = ['home', 'sell', 'products', 'receive', 'count', 'sales', 'labels', 'settings'];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -856,7 +970,17 @@ function normalizeState(s) {
     })),
     stockIns: arr(s.stockIns).filter(x => x && isoOrNull(x.date)).map(x => ({
       id: str(x.id) || uid(), date: isoOrNull(x.date), items: normItems(x.items), note: str(x.note), sample: !!x.sample
-    }))
+    })),
+    // Stock counts and single-item returns, kept for each product's activity list
+    adjustments: arr(s.adjustments).filter(x => x && isoOrNull(x.date)).map(x => ({
+      id: str(x.id) || uid(), date: isoOrNull(x.date), kind: x.kind === 'return' ? 'return' : 'count',
+      note: str(x.note), saleNo: Math.max(0, int0(x.saleNo)), counted: Math.max(0, int0(x.counted)), sample: !!x.sample,
+      items: arr(x.items).filter(i => i && typeof i === 'object').map(i => ({ pid: str(i.pid), name: str(i.name), from: int0(i.from), to: int0(i.to), qty: Math.max(0, int0(i.qty)) }))
+    })),
+    countDraft: (() => {
+      const cd = s.countDraft && typeof s.countDraft === 'object' ? s.countDraft : {};
+      return { location: str(cd.location), lines: arr(cd.lines).filter(l => l && l.pid).map(l => ({ pid: str(l.pid), n: Math.max(0, int0(l.n)) })) };
+    })()
   };
   for (const p of arr(s.products)) {
     if (!p || !p.id) continue;
@@ -944,6 +1068,11 @@ function commit() {
   state.rev++;
   queueSave();
   refreshUI();
+}
+// Saves without redrawing, for edits made while the person is still typing in a table
+function commitQuiet() {
+  state.rev++;
+  queueSave();
 }
 async function syncFromStorage() {
   if (storageMode === 'memory' || state.rev !== lastSavedRev) return;
@@ -1052,6 +1181,41 @@ function confirmBox(msg, { okText, danger } = {}) {
   });
 }
 
+/* ================= Copy to clipboard ================= */
+async function copyText(text, okMsg) {
+  try { await navigator.clipboard.writeText(text); toast(okMsg); return; } catch (e) { /* fall back below */ }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.append(ta);
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  ta.remove();
+  toast(ok ? okMsg : t('copy_failed'), ok ? 'ok' : 'bad');
+}
+function receiptText(s) {
+  const out = [];
+  const name = state.settings.storeName.trim();
+  if (name) out.push(name);
+  out.push(`${t('receipt_title', { no: s.no })} · ${fmtDateTime(s.date)}`);
+  out.push('------------------------');
+  for (const i of s.items) if (i.qty > 0) out.push(`${i.name} × ${i.qty} = ${money(i.qty * i.price)}`);
+  out.push('------------------------');
+  out.push(`${t('total')}: ${money(s.total)}`);
+  out.push(t('receipt_thanks'));
+  return out.join('\n');
+}
+function orderListText() {
+  const low = state.products.filter(p => stockState(p) !== 'ok').sort((a, b) => a.qty - b.qty || a.name.localeCompare(b.name, lang));
+  const out = [];
+  const name = state.settings.storeName.trim();
+  out.push((name ? name + ' · ' : '') + t('order_title') + ' · ' + fmtDate(nowISO()));
+  for (const p of low) out.push('- ' + t('order_line', { name: p.name, n: p.qty }));
+  return out.join('\n');
+}
+
 /* ================= UI state ================= */
 const ui = {
   view: 'home',
@@ -1059,7 +1223,7 @@ const ui = {
   cart: [], sellNote: '', sellMsg: null, flashPid: null,
   recv: [], recvNote: '', recvMsg: null,
   prod: { q: '', cat: '', stock: '', sort: 'name', msg: null },
-  salesPeriod: 'today', openSale: null,
+  salesPeriod: 'today', openSale: null, countMsg: null,
   labels: { sel: new Map(), onlyGen: true, showPrice: true, skip: 0, q: '' }
 };
 
@@ -1231,7 +1395,7 @@ function renderHomeBody() {
     </section>
     <div class="two-col">
       <section class="panel">
-        <div class="panel-head"><h2 class="h2">${esc(t('low_title'))}</h2>${low.length > 8 ? `<button type="button" class="link-btn" data-action="show-low">${esc(t('low_all'))}</button>` : ''}</div>
+        <div class="panel-head"><h2 class="h2">${esc(t('low_title'))}</h2><span class="btn-row">${low.length ? `<button type="button" class="btn btn-sm" data-action="copy-order">${esc(t('copy_order'))}</button>` : ''}${low.length > 8 ? `<button type="button" class="link-btn" data-action="show-low">${esc(t('low_all'))}</button>` : ''}</span></div>
         ${low.length ? `<ul class="list">${low.slice(0, 8).map(p => hitRow(p, 'show-product')).join('')}</ul>` : `<p class="empty">${esc(t('low_empty'))}</p>`}
       </section>
       <section class="panel">
@@ -1269,7 +1433,7 @@ views.sell = {
           <div class="grand"><span class="grand-label">${esc(t('total'))}</span><span class="grand-val" id="sell-total"></span></div>
           <div class="side-meta" id="sell-meta"></div>
           <input id="sell-note" class="in" type="text" autocomplete="off" placeholder="${esc(t('sale_note_ph'))}" aria-label="${esc(t('sale_note_ph'))}" value="${esc(ui.sellNote)}">
-          <button type="button" class="btn btn-primary btn-lg btn-block" id="sell-complete" data-action="complete-sale">${esc(t('complete_sale'))}</button>
+          <button type="button" class="btn btn-primary btn-lg btn-block" id="sell-complete" data-action="complete-sale">${esc(t('complete_sale'))} <kbd>F9</kbd></button>
           <button type="button" class="btn btn-ghost btn-block" id="sell-clear" data-action="clear-cart">${esc(t('clear_cart'))}</button>
         </div>
         <div id="sell-last" class="last-sale"></div>
@@ -1297,17 +1461,17 @@ function renderCart() {
   const el = $('#sell-cart'); if (!el) return;
   ui.cart = ui.cart.filter(l => getP(l.pid));
   if (!ui.cart.length) { el.innerHTML = `<div class="msg"><p>${esc(t('cart_empty'))}</p></div>`; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-cart">
+  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-cart tbl-cards">
     <thead><tr><th>${esc(t('col_product'))}</th><th>${esc(t('col_unit'))}</th><th>${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_line'))}</th><th></th></tr></thead>
     <tbody>${ui.cart.map((l, i) => {
       const p = getP(l.pid);
       const over = l.qty > p.qty;
       return `<tr class="${l.pid === ui.flashPid ? 'row-flash' : ''}">
         <td class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code>${p.location ? `<span>${esc(p.location)}</span>` : ''}<span class="${over ? 'warn-text' : ''}" data-stock-note="${i}">${esc(over ? t('over_stock', { n: p.qty }) : t('in_stock_n', { n: p.qty }))}</span></span></td>
-        <td><input class="in in-num price-in" type="text" inputmode="decimal" data-on="cart-price" data-i="${i}" value="${esc(fmtNum(l.price).replace(/,/g, ''))}" aria-label="${esc(t('col_unit'))}"></td>
-        <td><div class="stepper"><button type="button" data-action="cart-dec" data-i="${i}" aria-label="−">−</button><input type="text" inputmode="numeric" data-on="cart-qty" data-i="${i}" value="${l.qty}" aria-label="${esc(t('col_qty'))}"><button type="button" data-action="cart-inc" data-i="${i}" aria-label="+">+</button></div></td>
-        <td class="num-col"><b data-line-total="${i}">${moneyH(l.qty * l.price)}</b></td>
-        <td><button type="button" class="icon-btn" data-action="cart-remove" data-i="${i}" aria-label="${esc(t('remove'))}">×</button></td>
+        <td data-label="${esc(t('col_unit'))}"><input class="in in-num price-in" type="text" inputmode="decimal" data-on="cart-price" data-i="${i}" value="${esc(fmtNum(l.price).replace(/,/g, ''))}" aria-label="${esc(t('col_unit'))}"></td>
+        <td data-label="${esc(t('col_qty'))}"><div class="stepper"><button type="button" data-action="cart-dec" data-i="${i}" aria-label="−">−</button><input type="text" inputmode="numeric" data-on="cart-qty" data-i="${i}" value="${l.qty}" aria-label="${esc(t('col_qty'))}"><button type="button" data-action="cart-inc" data-i="${i}" aria-label="+">+</button></div></td>
+        <td class="num-col" data-label="${esc(t('col_line'))}"><b data-line-total="${i}">${moneyH(l.qty * l.price)}</b></td>
+        <td class="cell-end"><button type="button" class="icon-btn" data-action="cart-remove" data-i="${i}" aria-label="${esc(t('remove'))}">×</button></td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
   ui.flashPid = null;
@@ -1323,7 +1487,7 @@ function renderLastSale() {
   const el = $('#sell-last'); if (!el) return;
   const s = [...state.sales].reverse().find(x => !x.cancelled);
   el.innerHTML = s && isToday(s.date)
-    ? `<span>${esc(t('last_sale', { no: s.no, total: money(s.total) }))} · ${esc(fmtTime(s.date))}</span><button type="button" class="link-btn" data-action="cancel-sale" data-id="${esc(s.id)}">${esc(t('undo_sale'))}</button>`
+    ? `<span>${esc(t('last_sale', { no: s.no, total: money(s.total) }))} · ${esc(fmtTime(s.date))}</span><button type="button" class="link-btn" data-action="copy-receipt" data-id="${esc(s.id)}">${esc(t('copy_receipt'))}</button><button type="button" class="link-btn" data-action="cancel-sale" data-id="${esc(s.id)}">${esc(t('undo_sale'))}</button>`
     : '';
 }
 function addToCart(p) {
@@ -1387,6 +1551,7 @@ async function returnItem(id, k) {
   cur.total = round2(sum(cur.items, i => i.qty * i.price));
   cur.profit = round2(sum(cur.items, i => i.qty * (i.price - i.cost)));
   if (cur.items.every(i => i.qty === 0)) { cur.cancelled = true; cur.cancelledAt = nowISO(); }
+  state.adjustments.push({ id: uid(), date: nowISO(), kind: 'return', saleNo: cur.no, note: '', counted: 0, sample: !!cur.sample, items: [{ pid: l.pid, name: l.name, from: 0, to: 0, qty: 1 }] });
   ui.openSale = cur.id;
   commit();
   toast(t('return_done', { name: l.name }));
@@ -1420,7 +1585,7 @@ views.receive = {
           <div class="grand"><span class="grand-label">${esc(t('col_received'))}</span><span class="grand-val" id="recv-total"></span></div>
           <div class="side-meta" id="recv-meta"></div>
           <input id="recv-note" class="in" type="text" autocomplete="off" placeholder="${esc(t('recv_note_ph'))}" aria-label="${esc(t('recv_note_ph'))}" value="${esc(ui.recvNote)}">
-          <button type="button" class="btn btn-primary btn-lg btn-block" id="recv-submit" data-action="recv-submit">${esc(t('recv_submit'))}</button>
+          <button type="button" class="btn btn-primary btn-lg btn-block" id="recv-submit" data-action="recv-submit">${esc(t('recv_submit'))} <kbd>F9</kbd></button>
         </div>
         <section class="panel"><h2 class="h2">${esc(t('recv_recent'))}</h2><div id="recv-recent"></div></section>
       </aside>
@@ -1445,16 +1610,16 @@ function renderRecvList() {
   const el = $('#recv-list'); if (!el) return;
   ui.recv = ui.recv.filter(l => getP(l.pid));
   if (!ui.recv.length) { el.innerHTML = `<div class="msg"><p>${esc(t('recv_empty'))}</p></div>`; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-cart">
+  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-cart tbl-cards">
     <thead><tr><th>${esc(t('col_product'))}</th><th class="num-col">${esc(t('col_now'))}</th><th>${esc(t('col_received'))}</th><th>${esc(t('col_cost'))}</th><th></th></tr></thead>
     <tbody>${ui.recv.map((l, i) => {
       const p = getP(l.pid);
       return `<tr class="${l.pid === ui.flashPid ? 'row-flash' : ''}">
         <td class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code>${p.location ? `<span>${esc(p.location)}</span>` : ''}</span></td>
-        <td class="num-col">${qtyCell(p)}</td>
-        <td><div class="stepper"><button type="button" data-action="recv-dec" data-i="${i}" aria-label="−">−</button><input type="text" inputmode="numeric" data-on="recv-qty" data-i="${i}" value="${l.qty}" aria-label="${esc(t('col_received'))}"><button type="button" data-action="recv-inc" data-i="${i}" aria-label="+">+</button></div></td>
-        <td><input class="in in-num price-in" type="text" inputmode="decimal" data-on="recv-cost" data-i="${i}" value="${esc(String(l.cost))}" aria-label="${esc(t('col_cost'))}"></td>
-        <td><button type="button" class="icon-btn" data-action="recv-remove" data-i="${i}" aria-label="${esc(t('remove'))}">×</button></td>
+        <td class="num-col" data-label="${esc(t('col_now'))}">${qtyCell(p)}</td>
+        <td data-label="${esc(t('col_received'))}"><div class="stepper"><button type="button" data-action="recv-dec" data-i="${i}" aria-label="−">−</button><input type="text" inputmode="numeric" data-on="recv-qty" data-i="${i}" value="${l.qty}" aria-label="${esc(t('col_received'))}"><button type="button" data-action="recv-inc" data-i="${i}" aria-label="+">+</button></div></td>
+        <td data-label="${esc(t('col_cost'))}"><input class="in in-num price-in" type="text" inputmode="decimal" data-on="recv-cost" data-i="${i}" value="${esc(String(l.cost))}" aria-label="${esc(t('col_cost'))}"></td>
+        <td class="cell-end"><button type="button" class="icon-btn" data-action="recv-remove" data-i="${i}" aria-label="${esc(t('remove'))}">×</button></td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
   ui.flashPid = null;
@@ -1526,7 +1691,10 @@ views.products = {
     const f = ui.prod;
     el.innerHTML = `<div class="stack">
       <div class="page-head"><h1 class="h1">${esc(t('products_title'))}</h1>
-        <div class="head-actions"><button type="button" class="btn" data-action="export-csv">${esc(t('export_csv'))}</button><button type="button" class="btn btn-primary" data-action="new-product">${esc(t('add_product'))}</button></div></div>
+        <div class="head-actions"><button type="button" class="btn" data-action="export-csv">${esc(t('export_csv'))}</button>
+          <label class="btn" for="import-file" tabindex="0" data-action="file-pick">${esc(t('import_csv'))}</label><input type="file" id="import-file" accept=".csv,text/csv" hidden>
+          <button type="button" class="btn btn-primary" data-action="new-product">${esc(t('add_product'))}</button></div></div>
+      ${state.products.filter(p => !p.sample).length < 30 ? `<p class="hint">${esc(t('import_hint'))}</p>` : ''}
       <div class="toolbar">
         ${scanBox('prod-q', t('prod_search_ph'), f.q, 'scanbox-sm')}
         <select id="prod-cat" class="in" aria-label="${esc(t('pf_category'))}"></select>
@@ -1575,14 +1743,14 @@ function renderProdList() {
   else if (f.sort === 'new') list.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
   else if (!f.q.trim()) list.sort(byName);
   if (!list.length) { el.innerHTML = `<div class="msg"><p>${esc(t('products_empty'))}</p></div>`; return; }
-  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-products">
+  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-products tbl-cards">
     <thead><tr><th>${esc(t('col_product'))}</th><th>${esc(t('col_barcode'))}</th><th>${esc(t('col_location'))}</th><th class="num-col">${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_price'))}</th></tr></thead>
     <tbody>${list.map(p => `<tr class="row-link" data-action="edit-product" data-id="${esc(p.id)}">
       <td class="min0"><button type="button" class="link-btn cell-name" style="text-decoration:none;color:inherit;text-align:start" data-action="edit-product" data-id="${esc(p.id)}">${esc(p.name)}</button><span class="cell-sub">${esc(p.category || t('noCategory'))}</span></td>
-      <td><code>${esc(p.barcode)}</code></td>
-      <td>${locChip(p)}</td>
-      <td class="num-col">${qtyCell(p)}</td>
-      <td class="num-col">${moneyH(p.price)}</td>
+      <td data-label="${esc(t('col_barcode'))}"><code>${esc(p.barcode)}</code></td>
+      <td data-label="${esc(t('col_location'))}">${locChip(p)}</td>
+      <td class="num-col" data-label="${esc(t('col_qty'))}">${qtyCell(p)}</td>
+      <td class="num-col" data-label="${esc(t('col_price'))}">${moneyH(p.price)}</td>
     </tr>`).join('')}</tbody></table></div>
     <div class="table-foot"><span>${esc(t('foot_shown', { shown: list.length, total: state.products.length }))}</span><span>${esc(t('foot_units', { n: fmtNum(sum(list, p => Math.max(0, p.qty))) }))}</span><span>${esc(t('foot_value', { v: money(sum(list, p => Math.max(0, p.qty) * p.cost)) }))}</span></div>`;
 }
@@ -1601,6 +1769,267 @@ function exportCSV() {
   });
   download(`products-${ymd(new Date())}.csv`, '﻿' + rows.map(r => r.map(cell).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
   toast(t('csv_done'));
+}
+
+// Reads a CSV saved by Excel: UTF-8 or the older Arabic Windows encoding, comma or semicolon separated
+async function readCSVFile(file) {
+  const buf = await file.arrayBuffer();
+  let text;
+  try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+  catch (e) { text = new TextDecoder('windows-1256').decode(buf); }
+  text = text.replace(/^\ufeff/, '');
+  const first = text.split(/\r?\n/, 1)[0];
+  const delim = first.split(';').length > first.split(',').length ? ';' : (first.includes('\t') && !first.includes(',') ? '\t' : ',');
+  const rows = [];
+  let row = [], field = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === delim) { row.push(field); field = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); rows.push(row); row = []; field = '';
+    } else field += c;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(v => v.trim() !== ''));
+}
+const IMPORT_COLS = {
+  name: ['الاسم', 'اسم المنتج', 'المنتج', 'name', 'product', 'product name'],
+  barcode: ['الباركود', 'باركود', 'barcode', 'code', 'ean', 'upc'],
+  category: ['الفئة', 'الصنف', 'category'],
+  location: ['المكان', 'الرف', 'location', 'shelf'],
+  qty: ['الكمية', 'quantity', 'qty', 'stock'],
+  cost: ['سعر الشراء', 'التكلفة', 'cost', 'cost price'],
+  price: ['سعر البيع', 'السعر', 'price', 'selling price'],
+  minQty: ['حد التنبيه', 'warn at', 'min', 'minimum'],
+  notes: ['ملاحظات', 'notes', 'note']
+};
+const IMPORT_ORDER = ['name', 'barcode', 'category', 'location', 'qty', 'cost', 'price', 'minQty', 'notes'];
+async function importProducts(file) {
+  let rows;
+  try { rows = await readCSVFile(file); } catch (e) { toast(t('import_bad'), 'bad'); return; }
+  if (!rows.length) { toast(t('import_bad'), 'bad'); return; }
+  // Columns by header name (Arabic or English), or in the export file's order when there is no header
+  const head = rows[0].map(h => normText(h).trim());
+  const colOf = {};
+  for (const [key, names] of Object.entries(IMPORT_COLS)) {
+    const i = head.findIndex(h => names.some(n => normText(n) === h));
+    if (i >= 0) colOf[key] = i;
+  }
+  const hasHeader = colOf.name !== undefined || colOf.barcode !== undefined;
+  if (!hasHeader) IMPORT_ORDER.forEach((k, i) => { colOf[k] = i; });
+  const data = hasHeader ? rows.slice(1) : rows;
+  const cell = (r, k) => (colOf[k] === undefined ? '' : String(r[colOf[k]] ?? '').trim());
+  const plan = [];
+  const seen = new Set();
+  let skipped = 0, sci = 0;
+  for (const r of data) {
+    const raw = cell(r, 'barcode').replace(/^="?|"$/g, '');
+    if (/^\d+([.,]\d+)?e\+?\d+$/i.test(raw)) { sci++; continue; }
+    const code = normCode(raw);
+    if (code && !/^[\x21-\x7e]+$/.test(code)) { skipped++; continue; }
+    const name = cell(r, 'name');
+    const existing = code ? findByBarcode(code) : null;
+    const isUpdate = !!existing || (code && seen.has(code));
+    if (!name && !isUpdate) { skipped++; continue; }
+    if (code) seen.add(code);
+    const nums = {};
+    for (const k of ['qty', 'cost', 'price', 'minQty']) {
+      const n = parseNum(cell(r, k));
+      if (n !== null && Number.isFinite(n) && (k === 'qty' || n >= 0)) nums[k] = k === 'qty' || k === 'minQty' ? Math.round(n) : round2(n);
+    }
+    plan.push({ code, update: isUpdate, fields: { name, category: cell(r, 'category'), location: cell(r, 'location'), notes: cell(r, 'notes'), ...nums } });
+  }
+  const adds = plan.filter(x => !x.update).length;
+  const ups = plan.length - adds;
+  if (!plan.length) { toast(sci ? t('import_sci', { n: sci }) : t('import_none'), 'bad'); return; }
+  const msg = t('import_confirm', { a: adds, u: ups, s: skipped + sci }) + (sci ? '\n\n' + t('import_sci', { n: sci }) : '');
+  if (!await confirmBox(msg, { okText: t('import_ok') })) return;
+  const now = nowISO();
+  for (const row of plan) {
+    const f = row.fields;
+    const target = row.code ? findByBarcode(row.code) : null;
+    if (target) {
+      // Only overwrite what the file actually fills in
+      for (const k of ['name', 'category', 'location', 'notes']) if (f[k]) target[k] = f[k];
+      for (const k of ['qty', 'cost', 'price', 'minQty']) if (f[k] !== undefined) target[k] = f[k];
+      target.updatedAt = now;
+    } else {
+      let code = row.code, gen = false;
+      if (!code) { code = nextGenCode(); gen = true; state.settings.nextCode = Number(code.slice(2)) + 1; }
+      state.products.push({
+        id: uid(), name: f.name, barcode: code, gen, category: f.category, location: f.location,
+        cost: f.cost ?? 0, price: f.price ?? 0, qty: f.qty ?? 0, minQty: f.minQty ?? state.settings.lowDefault,
+        notes: f.notes, sample: false, createdAt: now, updatedAt: now
+      });
+    }
+  }
+  commit();
+  toast(t('import_done', { a: adds, u: ups }));
+}
+
+/* ----- Stock count ----- */
+views.count = {
+  mount(el) {
+    const locs = uniq(state.products.map(p => p.location));
+    const cd = state.countDraft;
+    el.innerHTML = `<div class="pos">
+      <section class="pos-main">
+        <h1 class="h1">${esc(t('count_title'))}</h1>
+        <p class="sub">${esc(t('count_intro'))}</p>
+        <div class="field count-place"><label class="field-label" for="count-loc">${esc(t('count_place'))}</label>
+          <select id="count-loc" class="in"><option value="">${esc(t('count_all_places'))}</option>${locs.map(l => `<option value="${esc(l)}">${esc(l)}</option>`).join('')}</select></div>
+        ${scanBox('count-scan', t('count_ph'))}
+        <div id="count-msg" class="results" aria-live="polite"></div>
+        <div id="count-list"></div>
+        <div id="count-missing"></div>
+      </section>
+      <aside class="pos-side">
+        <div class="panel">
+          <div class="grand"><span class="grand-label">${esc(t('count_total'))}</span><span class="grand-val" id="count-total"></span></div>
+          <div class="side-meta" id="count-meta"></div>
+          <button type="button" class="btn btn-primary btn-lg btn-block" id="count-apply" data-action="count-apply">${esc(t('count_apply'))} <kbd>F9</kbd></button>
+          <button type="button" class="btn btn-ghost btn-block" id="count-discard" data-action="count-discard">${esc(t('count_discard'))}</button>
+        </div>
+        <section class="panel"><h2 class="h2">${esc(t('count_recent'))}</h2><div id="count-recent"></div></section>
+      </aside>
+    </div>`;
+    $('#count-loc').value = locs.includes(cd.location) ? cd.location : '';
+    this.refresh();
+    focusScan();
+  },
+  refresh() { renderCountMsg(); renderCountList(); renderCountMissing(); renderCountTotals(); renderCountRecent(); }
+};
+function diffPill(d) {
+  if (d === 0) return `<span class="pill pill-ok"><span class="pill-ic" aria-hidden="true">✓</span>${esc(t('count_match'))}</span>`;
+  if (d > 0) return `<span class="pill pill-low"><span class="pill-ic" aria-hidden="true">+</span>${esc(t('count_more', { n: d }))}</span>`;
+  return `<span class="pill pill-out"><span class="pill-ic" aria-hidden="true">−</span>${esc(t('count_less', { n: -d }))}</span>`;
+}
+const countLines = () => state.countDraft.lines.filter(l => getP(l.pid));
+function renderCountMsg() {
+  const el = $('#count-msg'); if (!el) return;
+  const m = ui.countMsg;
+  if (!m) { el.innerHTML = ''; return; }
+  if (m.type === 'pick') {
+    const ps = m.ids.map(getP).filter(Boolean);
+    el.innerHTML = `<p class="hint">${esc(t('pick_one'))}</p><ul class="hits">${ps.map(p => hitRow(p, 'count-add')).join('')}</ul>`;
+  } else {
+    el.innerHTML = m.code ? notFoundMsg(m.code, 'count-new-with-code') : `<div class="msg msg-bad" role="alert"><p>${esc(t('noResults', { q: m.q }))}</p></div>`;
+  }
+}
+function renderCountList() {
+  const el = $('#count-list'); if (!el) return;
+  const lines = countLines();
+  if (!lines.length) { el.innerHTML = `<div class="msg"><p>${esc(t('count_empty'))}</p></div>`; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="tbl tbl-cart tbl-cards">
+    <thead><tr><th>${esc(t('col_product'))}</th><th class="num-col">${esc(t('col_system'))}</th><th>${esc(t('col_counted'))}</th><th>${esc(t('col_diff'))}</th><th></th></tr></thead>
+    <tbody>${lines.map(l => {
+      const p = getP(l.pid);
+      const id = esc(p.id);
+      return `<tr class="${l.pid === ui.flashPid ? 'row-flash' : ''}">
+        <td class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code>${p.location ? `<span>${esc(p.location)}</span>` : ''}</span></td>
+        <td class="num-col" data-label="${esc(t('col_system'))}"><b class="num">${p.qty}</b></td>
+        <td data-label="${esc(t('col_counted'))}"><div class="stepper"><button type="button" data-action="count-dec" data-pid="${id}" aria-label="−">−</button><input type="text" inputmode="numeric" data-on="count-n" data-pid="${id}" value="${l.n}" aria-label="${esc(t('col_counted'))}"><button type="button" data-action="count-inc" data-pid="${id}" aria-label="+">+</button></div></td>
+        <td data-label="${esc(t('col_diff'))}" data-count-diff="${id}">${diffPill(l.n - p.qty)}</td>
+        <td class="cell-end"><button type="button" class="icon-btn" data-action="count-remove" data-pid="${id}" aria-label="${esc(t('remove'))}">×</button></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+  ui.flashPid = null;
+}
+function renderCountMissing() {
+  const el = $('#count-missing'); if (!el) return;
+  const loc = state.countDraft.location;
+  if (!loc) { el.innerHTML = ''; return; }
+  const done = new Set(state.countDraft.lines.map(l => l.pid));
+  const missing = state.products.filter(p => p.location === loc && !done.has(p.id)).sort((a, b) => a.name.localeCompare(b.name, lang));
+  if (!missing.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<section class="panel">
+    <h2 class="h2">${esc(t('count_missing_title'))}</h2><p class="hint">${esc(t('count_missing_hint'))}</p>
+    <ul class="list">${missing.map(p => `<li class="hit hit-2" style="cursor:default"><span class="min0"><span class="cell-name">${esc(p.name)}</span><span class="cell-sub"><code>${esc(p.barcode)}</code><span>${esc(t('in_stock_n', { n: p.qty }))}</span></span></span>
+      <button type="button" class="btn btn-sm" data-action="count-zero" data-pid="${esc(p.id)}">${esc(t('count_zero'))}</button></li>`).join('')}</ul>
+  </section>`;
+}
+function renderCountTotals() {
+  const el = $('#count-total'); if (!el) return;
+  const lines = countLines();
+  el.innerHTML = numH(sum(lines, l => l.n));
+  const diffs = lines.filter(l => getP(l.pid).qty !== l.n).length;
+  $('#count-meta').innerHTML = `<span>${esc(t('count_lines', { n: lines.length }))}</span><span>${esc(t('count_diffs', { n: diffs }))}</span>`;
+  $('#count-apply').disabled = !lines.length;
+  $('#count-discard').disabled = !lines.length;
+}
+function renderCountRecent() {
+  const el = $('#count-recent'); if (!el) return;
+  const list = state.adjustments.filter(a => a.kind === 'count').slice(-6).reverse();
+  el.innerHTML = list.length
+    ? `<ul class="list">${list.map(a => `<li class="hit hit-2" style="cursor:default"><span class="min0"><span class="cell-name">${esc(fmtDateTime(a.date))}</span><span class="cell-sub">${esc(a.note || t('count_all_places'))}</span></span><span class="cell-sub">${esc(t('count_changed', { n: a.items.length, c: a.counted }))}</span></li>`).join('')}</ul>`
+    : `<p class="empty">${esc(t('count_recent_empty'))}</p>`;
+}
+function addToCount(p, n) {
+  const lines = state.countDraft.lines;
+  const i = lines.findIndex(l => l.pid === p.id);
+  if (i >= 0) { const [line] = lines.splice(i, 1); line.n = n === undefined ? line.n + 1 : n; lines.unshift(line); }
+  else lines.unshift({ pid: p.id, n: n === undefined ? 1 : n });
+  ui.countMsg = null;
+  ui.flashPid = p.id;
+  commit();
+}
+function countEnter(input) {
+  const raw = input.value;
+  const code = normCode(raw);
+  if (!code) return;
+  let p = findByBarcode(code);
+  if (!p) {
+    const m = searchProducts(raw);
+    if (m.length === 1) p = m[0];
+    else if (m.length > 1) { ui.countMsg = { type: 'pick', ids: m.slice(0, 8).map(x => x.id) }; renderCountMsg(); return; }
+    else { ui.countMsg = { type: 'notfound', code: looksLikeCode(code) ? code : null, q: raw }; beep(false); renderCountMsg(); input.select(); return; }
+  }
+  beep(true);
+  input.value = '';
+  addToCount(p);
+}
+async function applyCount() {
+  const lines = countLines();
+  if (!lines.length) return;
+  const changing = lines.filter(l => getP(l.pid).qty !== l.n).length;
+  if (!await confirmBox(t('count_apply_confirm', { n: changing }), { okText: t('count_apply') })) return;
+  const date = nowISO();
+  const items = [];
+  const now = countLines();
+  for (const l of now) {
+    const p = getP(l.pid);
+    if (p.qty !== l.n) { items.push({ pid: p.id, name: p.name, from: p.qty, to: l.n, qty: 0 }); p.qty = l.n; p.updatedAt = date; }
+  }
+  state.adjustments.push({ id: uid(), date, kind: 'count', note: state.countDraft.location, saleNo: 0, counted: now.length, sample: false, items });
+  state.countDraft = { location: state.countDraft.location, lines: [] };
+  commit();
+  toast(items.length ? t('count_done', { n: items.length }) : t('count_nochange'));
+  focusScan();
+}
+async function discardCount() {
+  if (!await confirmBox(t('count_discard_confirm'), { okText: t('count_discard'), danger: true })) return;
+  state.countDraft.lines = [];
+  commit();
+  focusScan();
+}
+function productActivity(pid) {
+  const ev = [];
+  for (const s of state.sales) for (const i of s.items) {
+    if (i.pid !== pid) continue;
+    ev.push({ date: s.date, text: t(s.cancelled ? 'act_sale_cancelled' : 'act_sale', { no: s.no }), delta: s.cancelled ? null : -(i.qty + (i.returned || 0)) });
+  }
+  for (const r of state.stockIns) for (const i of r.items) if (i.pid === pid) ev.push({ date: r.date, text: t('act_recv') + (r.note ? ' · ' + r.note : ''), delta: i.qty });
+  for (const a of state.adjustments) for (const i of a.items) {
+    if (i.pid !== pid) continue;
+    if (a.kind === 'count') ev.push({ date: a.date, text: t('act_count', { a: i.from, b: i.to }), delta: i.to - i.from });
+    else ev.push({ date: a.date, text: t('act_return', { no: a.saleNo }), delta: i.qty });
+  }
+  return ev.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
 }
 
 /* ----- Sales ----- */
@@ -1631,7 +2060,8 @@ views.sales = {
     const shown = list.slice(0, 200);
     el.innerHTML = `<div class="stack">
       <div class="page-head"><h1 class="h1">${esc(t('sales_title'))}</h1>
-        <div class="chips" role="group">${['today', 'week', 'month', 'all'].map(p => `<button type="button" class="chip" data-action="period" data-p="${p}" aria-pressed="${ui.salesPeriod === p}">${esc(t('p_' + p))}</button>`).join('')}</div></div>
+        <div class="head-actions"><div class="chips" role="group">${['today', 'week', 'month', 'all'].map(p => `<button type="button" class="chip" data-action="period" data-p="${p}" aria-pressed="${ui.salesPeriod === p}">${esc(t('p_' + p))}</button>`).join('')}</div>
+        ${inPeriod.length ? `<button type="button" class="btn btn-sm" data-action="export-sales">${esc(t('export_sales'))}</button>` : ''}</div></div>
       <section class="stats stats-3">
         ${tile(t('s_count'), numH(valid.length), esc(t('s_countSub', { n: unitsSold })))}
         ${tile(t('s_revenue'), moneyH(revenue), esc(t('s_revenueSub', { v: money(valid.length ? revenue / valid.length : 0) })))}
@@ -1650,6 +2080,23 @@ views.sales = {
     </div>`;
   }
 };
+function csvCell(v) {
+  const s = String(v ?? '');
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportSalesCSV() {
+  const start = periodStart(ui.salesPeriod);
+  const rows = [t('sales_csv_head').split(',')];
+  for (const s of state.sales.filter(x => new Date(x.date) >= start)) {
+    const d = new Date(s.date);
+    for (const i of s.items) {
+      rows.push([s.no, ymd(d), `${pad2(d.getHours())}:${pad2(d.getMinutes())}`, i.name, i.barcode ? '="' + i.barcode.replace(/"/g, '') + '"' : '',
+        i.qty, i.price, round2(i.qty * i.price), i.cost, round2(i.qty * (i.price - i.cost)), t(s.cancelled ? 'status_cancelled' : 'status_ok')]);
+    }
+  }
+  download(`sales-${ui.salesPeriod}-${ymd(new Date())}.csv`, '\ufeff' + rows.map(r => r.map(csvCell).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
+  toast(t('sales_csv_done'));
+}
 function saleRow(s) {
   const when = ui.salesPeriod === 'today' ? fmtTime(s.date) : fmtDateTime(s.date);
   return `<details class="sale${s.cancelled ? ' is-cancelled' : ''}"${s.id === ui.openSale ? ' open' : ''}>
@@ -1663,7 +2110,7 @@ function saleRow(s) {
       <div class="table-wrap"><table class="tbl"><thead><tr><th>${esc(t('col_product'))}</th><th class="num-col">${esc(t('col_qty'))}</th><th class="num-col">${esc(t('col_unit'))}</th><th class="num-col">${esc(t('col_line'))}</th>${s.cancelled ? '' : '<th></th>'}</tr></thead>
       <tbody>${s.items.map((i, k) => `<tr><td>${esc(i.name)}${i.returned ? ` <span class="pill pill-muted">${esc(t('returned_n', { n: i.returned }))}</span>` : ''}</td><td class="num-col">${i.qty}</td><td class="num-col">${moneyH(i.price)}</td><td class="num-col">${moneyH(i.qty * i.price)}</td>${s.cancelled ? '' : `<td class="num-col">${i.qty > 0 ? `<button type="button" class="btn btn-sm" data-action="return-item" data-id="${esc(s.id)}" data-k="${k}">${esc(t('return_one'))}</button>` : ''}</td>`}</tr>`).join('')}</tbody></table></div>
       ${s.note ? `<p class="sale-note">${esc(s.note)}</p>` : ''}
-      ${s.cancelled ? '' : `<div><button type="button" class="btn btn-danger btn-sm" data-action="cancel-sale" data-id="${esc(s.id)}">${esc(t('cancel_sale'))}</button></div>`}
+      <div class="btn-row">${s.cancelled ? '' : `<button type="button" class="btn btn-sm" data-action="copy-receipt" data-id="${esc(s.id)}">${esc(t('copy_receipt'))}</button><button type="button" class="btn btn-danger btn-sm" data-action="cancel-sale" data-id="${esc(s.id)}">${esc(t('cancel_sale'))}</button>`}</div>
     </div>
   </details>`;
 }
@@ -1795,7 +2242,7 @@ views.settings = {
           <p id="set-backup-info" class="hint"></p>
           <div class="btn-row">
             <button type="button" class="btn btn-primary" data-action="backup">${esc(t('backup_download'))}</button>
-            <label class="btn" for="restore-file" tabindex="0" data-action="restore-pick">${esc(t('backup_restore'))}</label>
+            <label class="btn" for="restore-file" tabindex="0" data-action="file-pick">${esc(t('backup_restore'))}</label>
             <input type="file" id="restore-file" accept=".json,application/json" hidden>
           </div>
           <h3>${esc(t('data_title'))}</h3>
@@ -1837,7 +2284,7 @@ async function restoreFrom(file) {
   const incoming = normalizeState(obj.data);
   incoming.rev = state.rev;
   state = incoming;
-  ui.cart = []; ui.recv = []; ui.labels.sel.clear(); ui.homeHit = null;
+  ui.cart = []; ui.recv = []; ui.labels.sel.clear(); ui.homeHit = null; ui.countMsg = null;
   commit();
   renderAll();
   toast(t('restored'));
@@ -1875,12 +2322,16 @@ function openProductDialog(p, opts = {}) {
         <div class="field"><label class="field-label" for="pf-min">${esc(t('pf_min'))}</label><input id="pf-min" class="in in-num" type="text" inputmode="numeric" value="${esc(numVal(v.minQty))}"></div>
       </div>
       <div class="field"><label class="field-label" for="pf-notes">${esc(t('pf_notes'))}</label><textarea id="pf-notes" class="in" rows="2" placeholder="${esc(t('pf_notes_ph'))}">${esc(v.notes)}</textarea></div>
+      ${isNew ? '' : (() => {
+        const ev = productActivity(pid);
+        return `<div class="field"><span class="field-label">${esc(t('act_title'))}</span>${ev.length ? `<ul class="act-list">${ev.map(x => `<li><span class="min0"><span>${esc(x.text)}</span> <span class="cell-sub">${esc(fmtDateTime(x.date))}</span></span><b class="num ${x.delta > 0 ? 'delta-up' : x.delta < 0 ? 'delta-down' : ''}">${x.delta === null ? '—' : (x.delta > 0 ? '+' : '') + x.delta}</b></li>`).join('')}</ul>` : `<p class="hint">${esc(t('act_none'))}</p>`}</div>`;
+      })()}
       <p class="form-err" id="pf-err" role="alert"></p>
       <datalist id="dl-cat">${cats.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>
       <datalist id="dl-loc">${locs.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>
     </div>
     <footer class="dlg-foot">
-      ${isNew ? '' : `<button type="button" class="btn btn-danger" data-pf="delete">${esc(t('pf_delete'))}</button>`}
+      ${isNew ? '' : `<button type="button" class="btn btn-danger" data-pf="delete">${esc(t('pf_delete'))}</button><button type="button" class="btn" data-pf="label">${esc(t('pf_label'))}</button>`}
       <span class="spacer"></span>
       <button type="button" class="btn btn-ghost" data-pf="close">${esc(t('cancel'))}</button>
       ${isNew && !opts.onSaved ? `<button type="button" class="btn" data-pf="save-next">${esc(t('pf_save_next'))}</button>` : ''}
@@ -1948,6 +2399,10 @@ function openProductDialog(p, opts = {}) {
     else if (act === 'save') save(false);
     else if (act === 'save-next') save(true);
     else if (act === 'open-other') { const o = getP(b.dataset.id); if (o) openProductDialog(o); }
+    else if (act === 'label') {
+      const cur = getP(pid); d.close();
+      if (cur) { ui.labels.sel.set(cur.id, defaultCopies(cur)); go('labels'); }
+    }
     else if (act === 'delete') {
       const cur = getP(pid); if (!cur) { d.close(); return; }
       if (!await confirmBox(t('del_confirm', { name: cur.name }), { okText: t('pf_delete'), danger: true })) return;
@@ -2037,6 +2492,8 @@ async function removeSample() {
   state.products = state.products.filter(p => !p.sample);
   state.sales = state.sales.filter(s => !touches(s));
   state.stockIns = state.stockIns.filter(s => !touches(s));
+  state.adjustments = state.adjustments.filter(s => !touches(s));
+  state.countDraft.lines = state.countDraft.lines.filter(l => !ids.has(l.pid));
   if (!state.sales.length) state.settings.nextSaleNo = 1;
   if (!state.products.length) state.settings.nextCode = 1;
   ui.cart = ui.cart.filter(l => !ids.has(l.pid));
@@ -2065,7 +2522,18 @@ const actions = {
   'load-sample': loadSample,
   'remove-sample': removeSample,
   'backup': downloadBackup,
-  'restore-pick': () => {},
+  'file-pick': () => {},
+  'copy-receipt': b => { const s = state.sales.find(x => x.id === b.dataset.id); if (s) copyText(receiptText(s), t('receipt_copied')); },
+  'copy-order': () => copyText(orderListText(), t('order_copied')),
+  'export-sales': exportSalesCSV,
+  'count-add': b => { const p = getP(b.dataset.id); if (p) { const s = $('#count-scan'); if (s) { s.value = ''; s.focus(); } addToCount(p); } },
+  'count-inc': b => { const l = state.countDraft.lines.find(x => x.pid === b.dataset.pid); if (l) { l.n++; commit(); } },
+  'count-dec': b => { const l = state.countDraft.lines.find(x => x.pid === b.dataset.pid); if (l) { l.n = Math.max(0, l.n - 1); commit(); } },
+  'count-remove': b => { state.countDraft.lines = state.countDraft.lines.filter(x => x.pid !== b.dataset.pid); commit(); focusScan(); },
+  'count-zero': b => { const p = getP(b.dataset.pid); if (p) addToCount(p, 0); },
+  'count-apply': applyCount,
+  'count-discard': discardCount,
+  'count-new-with-code': b => openProductDialog(null, { barcode: b.dataset.code, hint: t('pf_count_hint'), onSaved: p => { if (ui.view === 'count') addToCount(p, Math.max(0, p.qty)); } }),
   'export-csv': exportCSV,
   'cart-add': b => { const p = getP(b.dataset.id); if (p) { addToCart(p); const s = $('#sell-scan'); if (s) { s.value = ''; s.focus(); } } },
   'cart-inc': b => { const l = ui.cart[+b.dataset.i]; if (l) { l.qty++; renderCart(); renderSellTotals(); } },
@@ -2102,10 +2570,28 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   const el = e.target;
   if (e.key === 'Enter' && !e.isComposing && el.id) {
-    const map = { 'home-q': homeEnter, 'sell-scan': sellEnter, 'recv-scan': recvEnter, 'prod-q': prodEnter, 'lbl-q': lblEnter };
+    const map = { 'home-q': homeEnter, 'sell-scan': sellEnter, 'recv-scan': recvEnter, 'count-scan': countEnter, 'prod-q': prodEnter, 'lbl-q': lblEnter };
     if (map[el.id]) { e.preventDefault(); map[el.id](el); return; }
   }
-  if (e.key === 'Enter' && el.matches && el.matches('label[data-action="restore-pick"]')) { $('#restore-file').click(); return; }
+  if (e.key === 'Enter' && el.matches && el.matches('label[data-action="file-pick"]')) { const f = document.getElementById(el.htmlFor); if (f) f.click(); return; }
+  // Counter shortcuts: F9 finishes the sale / delivery / count, F2 jumps to the scan box, Esc clears it
+  if (!document.querySelector('dialog[open]')) {
+    if (e.key === 'F9') {
+      const fin = { sell: completeSale, receive: submitRecv, count: applyCount }[ui.view];
+      if (fin) { e.preventDefault(); fin(); }
+      return;
+    }
+    if (e.key === 'F2') { e.preventDefault(); focusScan(); return; }
+    if (e.key === 'Escape' && el.classList && el.classList.contains('scan-input')) {
+      el.value = '';
+      ui.sellMsg = ui.recvMsg = ui.countMsg = null;
+      if (el.id === 'home-q') { ui.homeQuery = ''; ui.homeHit = null; }
+      if (el.id === 'prod-q') { ui.prod.q = ''; ui.prod.msg = null; }
+      if (el.id === 'lbl-q') ui.labels.q = '';
+      refreshUI();
+      return;
+    }
+  }
   // A barcode scanner types like a keyboard: send stray keystrokes to the page's scan box
   if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1 || e.key === ' ') return;
   if (document.querySelector('dialog[open]')) return;
@@ -2119,14 +2605,14 @@ document.addEventListener('input', e => {
   const el = e.target;
   const on = el.dataset ? el.dataset.on : null;
   if (el.id === 'home-q') { ui.homeQuery = el.value; ui.homeHit = null; renderHomeResults(); return; }
-  if (el.id === 'sell-scan' || el.id === 'recv-scan') {
+  if (el.id === 'sell-scan' || el.id === 'recv-scan' || el.id === 'count-scan') {
     const q = el.value.trim();
-    const key = el.id === 'sell-scan' ? 'sellMsg' : 'recvMsg';
+    const key = { 'sell-scan': 'sellMsg', 'recv-scan': 'recvMsg', 'count-scan': 'countMsg' }[el.id];
     if (q.length >= 2 && /[^\d\s]/.test(normDigits(q))) {
       const m = searchProducts(q);
       ui[key] = m.length ? { type: 'pick', ids: m.slice(0, 8).map(x => x.id) } : null;
     } else ui[key] = null;
-    if (key === 'sellMsg') renderSellMsg(); else renderRecvMsg();
+    ({ sellMsg: renderSellMsg, recvMsg: renderRecvMsg, countMsg: renderCountMsg })[key]();
     return;
   }
   if (el.id === 'sell-note') { ui.sellNote = el.value; return; }
@@ -2152,6 +2638,17 @@ document.addEventListener('input', e => {
     renderRecvTotals();
     return;
   }
+  if (on === 'count-n') {
+    const l = state.countDraft.lines.find(x => x.pid === el.dataset.pid); if (!l) return;
+    const n = parseNum(el.value);
+    if (n === null || Number.isNaN(n) || n < 0) return;
+    l.n = Math.round(n);
+    const p = getP(l.pid);
+    const cell = $(`[data-count-diff="${CSS.escape(l.pid)}"]`);
+    if (p && cell) cell.innerHTML = diffPill(l.n - p.qty);
+    renderCountTotals();
+    return;
+  }
   if (on === 'lbl-copies') {
     const id = el.dataset.id; const n = parseNum(el.value);
     const c = Number.isFinite(n) ? Math.max(0, Math.min(500, Math.round(n))) : 0;
@@ -2166,6 +2663,7 @@ document.addEventListener('change', async e => {
   const on = el.dataset ? el.dataset.on : null;
   if (on === 'cart-price' || on === 'cart-qty') { const l = ui.cart[+el.dataset.i]; if (l) el.value = on === 'cart-price' ? String(l.price) : String(l.qty); return; }
   if (on === 'recv-qty' || on === 'recv-cost') { const l = ui.recv[+el.dataset.i]; if (l) el.value = on === 'recv-qty' ? String(l.qty) : String(l.cost); return; }
+  if (on === 'count-n') { const l = state.countDraft.lines.find(x => x.pid === el.dataset.pid); if (l) { el.value = String(l.n); commitQuiet(); } return; }
   if (el.dataset && el.dataset.lblCheck) {
     const p = getP(el.dataset.lblCheck); if (!p) return;
     if (el.checked) ui.labels.sel.set(p.id, defaultCopies(p)); else ui.labels.sel.delete(p.id);
@@ -2183,6 +2681,12 @@ document.addEventListener('change', async e => {
     case 'set-cur': state.settings.currency = el.value.trim(); commit(); break;
     case 'set-min': { const n = parseNum(el.value); state.settings.lowDefault = Number.isFinite(n) && n >= 0 ? Math.round(n) : 2; el.value = state.settings.lowDefault; commit(); break; }
     case 'set-sound': state.settings.sound = el.checked; commit(); if (el.checked) beep(true); break;
+    case 'count-loc': state.countDraft.location = el.value; commit(); break;
+    case 'import-file':
+      try { if (el.files && el.files[0]) await importProducts(el.files[0]); }
+      catch (err) { console.error(err); toast(t('import_bad'), 'bad'); }
+      el.value = '';
+      break;
     case 'restore-file':
       try { if (el.files && el.files[0]) await restoreFrom(el.files[0]); }
       catch (err) { console.error(err); toast(t('restore_bad'), 'bad'); }
@@ -2198,8 +2702,10 @@ window.addEventListener('hashchange', () => {
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) saveChain = saveChain.then(syncFromStorage).catch(() => {}); });
 window.addEventListener('focus', () => { saveChain = saveChain.then(syncFromStorage).catch(() => {}); });
+// Ask before closing while a sale is open or the last change is still being saved
 window.addEventListener('beforeunload', e => {
-  if (ui.cart.length || ui.recv.length) { e.preventDefault(); e.returnValue = ''; }
+  const unsaved = state && storageMode !== 'memory' && state.rev !== lastSavedRev;
+  if (ui.cart.length || ui.recv.length || unsaved) { e.preventDefault(); e.returnValue = ''; }
 });
 
 /* ================= Start ================= */

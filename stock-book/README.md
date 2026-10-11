@@ -26,7 +26,28 @@ An inventory and sales app for a computer accessories store. One file that runs 
 - **استلام بضاعة:** عند وصول بضاعة جديدة، امسحها لتضاف إلى المخزون.
 - **المبيعات:** المبيعات والربح لليوم أو الأسبوع أو الشهر، والمنتجات الأكثر مبيعاً.
 - **الملصقات:** طباعة باركود للمنتجات التي ليس عليها باركود، أو حفظها PDF وطباعتها في مكتبة.
+- **جرد:** امسح كل قطعة على الرف، فيظهر الناقص والزائد، ثم اضغط "اعتماد الجرد" لتصحيح الكميات.
+- **استيراد من Excel:** أدخل منتجات كثيرة دفعة واحدة من ملف Excel (CSV).
+- **نسخ الفاتورة:** انسخ فاتورة البيع والصقها في واتساب للزبون. وزر "نسخ قائمة الطلب" يجهّز قائمة للمورّد.
+- **آخر الحركات:** في نافذة كل منتج: المبيعات والاستلام والجرد والمرتجعات.
 - **الإعدادات:** اسم المحل، العملة، اللغة، والنسخ الاحتياطي.
+
+### اختصارات الكيبورد
+
+- **F9:** إتمام البيع، أو إضافة البضاعة المستلمة، أو اعتماد الجرد.
+- **F2:** الانتقال إلى خانة المسح.
+- **Esc:** مسح خانة المسح.
+
+## What it does
+
+- **Home:** scan any product to see where it is, how many are left, and the price.
+- **Sell:** scan items and press "Complete sale"; stock goes down by itself. Copy the receipt to send on WhatsApp.
+- **Products:** add, edit and search, export to Excel, or import many products from an Excel (CSV) file.
+- **Receive stock:** scan new deliveries to add them to stock.
+- **Stock count:** scan every item on a shelf, see what's missing or extra, then apply the count to correct quantities.
+- **Sales:** sales and profit by day, week or month, best sellers, single-item returns, export to Excel.
+- **Labels:** barcode stickers for products without one, as a print or a PDF.
+- **Shortcuts:** F9 finishes a sale, delivery or count; F2 jumps to the scan box; Esc clears it.
 
 ## مهم
 
