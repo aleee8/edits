@@ -433,6 +433,7 @@ const STR = {
     backup_never: 'لم تحفظ أي نسخة احتياطية بعد. احفظ نسخة حتى لا تضيع البيانات إذا تعطل الكمبيوتر.',
     backup_old: 'آخر نسخة احتياطية كانت في {date}. احفظ نسخة جديدة الآن.',
     backup_now: 'احفظ نسخة الآن',
+    preview_banner: 'هذه نسخة للتجربة فقط. الطباعة والنسخ الاحتياطي يعملان فقط عند فتح الملف في Chrome على الكمبيوتر.',
     storage_warn: 'المتصفح لا يسمح بحفظ البيانات هنا، لذلك لن تُحفظ التغييرات. افتح الملف في Google Chrome.',
     save_failed: 'لم يتم الحفظ. أعد المحاولة، وإذا تكرر الخطأ احفظ نسخة احتياطية.',
     conflict: 'تغيرت البيانات من نافذة أخرى، فتم تحميل أحدث نسخة. أعد آخر خطوة.',
@@ -579,6 +580,7 @@ const STR = {
     backup_never: "You haven't saved a backup yet. Save one so the data isn't lost if the computer breaks.",
     backup_old: 'Your last backup was on {date}. Save a new one now.',
     backup_now: 'Back up now',
+    preview_banner: 'This is a preview for trying the app. Printing and backups only work when you open the file in Chrome on a computer.',
     storage_warn: "This browser isn't letting the app save data here, so changes will be lost. Open the file in Google Chrome.",
     save_failed: "Couldn't save. Try again, and if it keeps failing, download a backup.",
     conflict: 'The data was changed in another window, so the latest version was loaded. Please repeat your last step.',
@@ -1086,11 +1088,14 @@ function banner(kind, text, actionHTML = '') {
   const ic = kind === 'info' ? 'i' : '!';
   return `<div class="banner banner-${kind}" role="status"><span class="banner-ic" aria-hidden="true">${ic}</span><p>${esc(text)}</p>${actionHTML}</div>`;
 }
+// Opened inside another page (an online preview) rather than as the file on the store computer
+const IS_PREVIEW = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
 function renderBanners() {
   const out = [];
+  if (IS_PREVIEW) out.push(banner('info', t('preview_banner')));
   if (storageMode === 'memory') out.push(banner('bad', t('storage_warn')));
   if (state.products.some(p => p.sample)) out.push(banner('info', t('sample_banner'), `<button type="button" class="btn btn-sm" data-action="remove-sample">${esc(t('sample_remove'))}</button>`));
-  out.push(backupReminder());
+  if (!IS_PREVIEW) out.push(backupReminder());
   $('#banners').innerHTML = out.join('');
 }
 function mountView() {
